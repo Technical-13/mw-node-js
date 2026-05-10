@@ -9,16 +9,14 @@ export class WikiWatchlist {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'watch' );
       const res = await this.session._post( { action: 'watch', ...params } );
-      if ( res.watch ) console.log( '[Wiki] Watchlist updated for: ' + res.watch.title );
+      if ( res.watch ) this.session.logger.info( '[Wiki] Watchlist updated for: ' + res.watch.title );
       return res.watch;
     }
     catch ( e ) {
-      console.error( '[Wiki] Watch failure: ' + e.message );
+      this.session.logger.error( '[Wiki] Watch failure: ' + e.message );
       return null;
     }
   }
 
-  async unwatch( params ) {
-    return await this.watch( { ...params, unwatch: true } );
-  }
+  async unwatch( params ) { return await this.watch( { ...params, unwatch: true } ); }
 }
