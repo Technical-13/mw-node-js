@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import pkg from '../../package.json' assert { type: 'json' };
+import { WikiTokens } from './tokens.js';
 
 /**
  * WikiSession Class
@@ -16,6 +17,7 @@ export class WikiSession {
     this.password = null;
     this.cookieJar = '';
     this.keepAliveInterval = null;
+    this.tokens = new WikiTokens( this );
     const metadata = this._getBotMetadata( );
     this.userAgent = 'mw-node-js (' + pkg.version + ') (Bot: ' + this.username + '; Version: ' + metadata.version + '; Author: ' + metadata.author + ')';
   }
@@ -53,13 +55,12 @@ export class WikiSession {
 
   async _performLogin( ) {
     try {
-      const tokenRes = await this._post( { action: 'query', meta: 'tokens', type: 'login' } );
-      const lgtoken = tokenRes.query.tokens.logintoken;
+      const lgtoken = await this.tokens.get( 'login' );
       const loginRes = await this._post( {
         action: 'login',
         lgname: this.username,
         lgpassword: this.password,
-        lgtoken
+        lgtoken: lgtoken
       } );
       return loginRes.login.result === 'Success';
     }
@@ -72,12 +73,12 @@ export class WikiSession {
   async clientLogin( password ) {
     this.password = password;
     try {
-      const tokenRes = await this._post( { action: 'query', meta: 'tokens', type: 'login' } );
+      const lgtoken = await this.tokens.get( 'login' );
       const loginRes = await this._post( {
         action: 'clientlogin',
         username: this.username,
         password: this.password,
-        logintoken: tokenRes.query.tokens.logintoken,
+        logintoken: lgtoken,
         loginreturnurl: this.apiUrl
       } );
       if ( loginRes.clientlogin.status === 'PASS' ) {
@@ -93,8 +94,8 @@ export class WikiSession {
   }
 
   async logout( ) {
-    const tokenRes = await this._post( { action: 'query', meta: 'tokens', type: 'csrf' } );
-    await this._post( { action: 'logout', token: tokenRes.query.tokens.csrftoken } );
+    const token = await this.tokens.get( 'csrf' );
+    await this._post( { action: 'logout', token: token } );
     if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
     this.cookieJar = '';
     this.password = null;
