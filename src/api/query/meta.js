@@ -5,38 +5,10 @@
 export class Meta {
   constructor( session ) { this.session = session; }
 
-  /**
-   * Fetches a CSRF token required for write actions.
-   * 
-   * @returns { Promise<string|null> }
-   */
-  async getCsrfToken( ) {
-    try {
-      const res = await this.session._post( {
-        action: 'query',
-        meta: 'tokens',
-        type: 'csrf'
-      } );
-      return res.query.tokens.csrftoken;
-    }
-    catch ( e ) {
-      console.error( '[Wiki] Meta failure (token): ' + e.message );
-      return null;
-    }
-  }
+  async getCsrfToken( ) { return await this.session.tokens.get( 'csrf' ); }
 
-  /**
-   * Retrieves info about the logged-in bot account.
-   * 
-   * @param { Object } params - Optional parameters for meta=userinfo (e.g. { uiprop: 'blockinfo' }).
-   * @returns { Promise<Object> }
-   */
   async getUserInfo( params = { uiprop: 'groups|rights|editcount' } ) {
-    const res = await this.session._post( {
-      action: 'query',
-      meta: 'userinfo',
-      ...params
-    } );
+    const res = await this.session._post( { action: 'query', meta: 'userinfo', ...params } );
     return res.query.userinfo;
   }
 }
