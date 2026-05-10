@@ -6,18 +6,22 @@ export class List {
   constructor( session ) { this.session = session; }
 
   /**
-   * Searches the wiki for pages matching a query.
+   * Executes a list query using generic parameters.
    * 
-   * @param { Object } params - Parameters for list=search.
-   * @returns { Promise<Array> }
+   * @param { Object } params - Parameters for list query.
+   * @returns { Promise<Object|null> }
    */
-  async search( params ) {
-    const res = await this.session._post( {
-      action: 'query',
-      list: 'search',
-      srlimit: 10,
-      ...params
-    } );
-    return res.query.search;
+  async get( params ) {
+    try {
+      const res = await this.session._post( {
+        action: 'query',
+        ...params
+      } );
+      return res.query;
+    }
+    catch ( e ) {
+      console.error( '[Wiki] List failure: ' + e.message );
+      return null;
+    }
   }
 }
