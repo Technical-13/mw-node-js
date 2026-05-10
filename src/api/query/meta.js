@@ -20,7 +20,7 @@ export class Meta {
       return res.query.tokens.csrftoken;
     }
     catch ( e ) {
-      console.error( `[Wiki] Meta failure (token): ${ e.message }` );
+      console.error( '[Wiki] Meta failure (token): ' + e.message );
       return null;
     }
   }
@@ -28,13 +28,14 @@ export class Meta {
   /**
    * Retrieves info about the logged-in bot account.
    * 
+   * @param { Object } params - Optional parameters for meta=userinfo (e.g. { uiprop: 'blockinfo' }).
    * @returns { Promise<Object> }
    */
-  async getUserInfo( ) {
+  async getUserInfo( params = { uiprop: 'groups|rights|editcount' } ) {
     const res = await this.session._post( {
       action: 'query',
       meta: 'userinfo',
-      uiprop: 'groups|rights|editcount'
+      ...params
     } );
     return res.query.userinfo;
   }
