@@ -26,7 +26,11 @@ jspm_packages/
 
 # Java / Tooling specific
 *.class
-WikiEncryptor.jar
+*.jar
+
+## Track the tools but ignore other Java junk
+!tools/WikiEncryptor.class
+!tools/WikiEncryptor.jar
 
 # Build outputs
 dist/
