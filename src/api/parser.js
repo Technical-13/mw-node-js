@@ -11,7 +11,7 @@ export class WikiParser {
       return res.parse;
     }
     catch ( e ) {
-      console.error( '[Wiki] Parse failure: ' + e.message );
+      this.session.logger.error( '[Wiki] Parse failure: ' + e.message );
       return null;
     }
   }
