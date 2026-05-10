@@ -9,11 +9,11 @@ export class WikiMedia {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'upload', ...params } );
-      if ( res.upload && res.upload.result === 'Success' ) console.log( '[Wiki] Upload successful: ' + res.upload.filename );
+      if ( res.upload && res.upload.result === 'Success' ) this.session.logger.info( '[Wiki] Upload successful: ' + res.upload.filename );
       return res.upload;
     }
     catch ( e ) {
-      console.error( '[Wiki] Upload failure: ' + e.message );
+      this.session.logger.error( '[Wiki] Upload failure: ' + e.message );
       return null;
     }
   }
