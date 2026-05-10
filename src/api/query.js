@@ -1,7 +1,7 @@
-import { Prop } from './query/prop.js';
+import { Generator } from './query/generator.js';
 import { List } from './query/list.js';
 import { Meta } from './query/meta.js';
-import { Generator } from './query/generator.js';
+import { Prop } from './query/prop.js';
 
 /**
  * WikiQuery Class
@@ -9,11 +9,11 @@ import { Generator } from './query/generator.js';
  */
 export class WikiQuery {
   constructor( session ) {
+    this.generator = new Generator( session );
+    this.list = new List( session );
+    this.meta = new Meta( session );
+    this.prop = new Prop( session );
     this.session = session;
-    this.prop = new Prop( this.session );
-    this.list = new List( this.session );
-    this.meta = new Meta( this.session );
-    this.generator = new Generator( this.session );
   }
 
   /**
@@ -46,7 +46,7 @@ export class WikiQuery {
       return fullResults;
     }
     catch ( e ) {
-      console.error( `[Wiki] Continued query failed: ${ e.message }` );
+      console.error( '[Wiki] Continued query failed: ' + e.message );
       return null;
     }
   }
