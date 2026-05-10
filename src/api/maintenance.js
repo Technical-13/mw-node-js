@@ -86,4 +86,30 @@ export class WikiMaintenance {
       return null;
     }
   }
+
+  async protect( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'protect', ...params } );
+      if ( res.protect ) console.log( '[Wiki] Protection updated for: ' + res.protect.title );
+      return res.protect;
+    }
+    catch ( e ) {
+      console.error( '[Wiki] Protect failure: ' + e.message );
+      return null;
+    }
+  }
+
+  async block( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'block', ...params } );
+      if ( res.block ) console.log( '[Wiki] User blocked: ' + res.block.user );
+      return res.block;
+    }
+    catch ( e ) {
+      console.error( '[Wiki] Block failure: ' + e.message );
+      return null;
+    }
+  }
 }
