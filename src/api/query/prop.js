@@ -25,7 +25,7 @@ export class Prop {
       return page.revisions.slots.main.content;
     }
     catch ( e ) {
-      console.error( `[Wiki] Prop failure for ${ title }: ${ e.message }` );
+      console.error( '[Wiki] Prop failure for ' + title + ': ' + e.message );
       return null;
     }
   }
