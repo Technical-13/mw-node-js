@@ -6,10 +6,12 @@ import { WikiParser } from './api/parser.js';
 import { WikiQuery } from './api/query.js';
 import { WikiSession } from './api/auth.js';
 import { WikiWatchlist } from './api/watchlist.js';
+import { WikiLogger } from './util/logger.js';
 
 export {
   WikiAccount,
   WikiEdit,
+  WikiLogger,
   WikiMaintenance,
   WikiMedia,
   WikiParser,
