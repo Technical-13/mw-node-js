@@ -16,13 +16,6 @@ export class WikiQuery {
     this.session = session;
   }
 
-  /**
-   * Executes a query with automatic continuation support.
-   * 
-   * @param { Object } params - Parameters for action=query.
-   * @param { number|string } limit - Total results desired or 'max' for all.
-   * @returns { Promise<Object> } - The aggregated query results.
-   */
   async execute( params, limit = 10 ) {
     try {
       const fullResults = { };
@@ -46,7 +39,7 @@ export class WikiQuery {
       return fullResults;
     }
     catch ( e ) {
-      console.error( '[Wiki] Continued query failed: ' + e.message );
+      this.session.logger.error( '[Wiki] Continued query failed: ' + e.message );
       return null;
     }
   }
