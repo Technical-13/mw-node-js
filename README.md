@@ -1,2 +1,73 @@
-# mw-node-js
-Node.js v22 library package to connect to MediaWiki wiki's v1.43.X
+# mw-node-js (v1.0.1)
+A modular Node.js 22+ library for MediaWiki 1.43+ and Discord.js v14 bots.
+
+## Package Metadata
+- **Current Version**: 1.0.1
+- **Last Updated**: 2026-05-10T18:52:48Z
+- **Tracking**: Check `package.json` for the `lastUpdated` key.
+
+## Features
+- **Encrypted Auth**: Securely handle wiki credentials using AES-256-CBC.
+- **Rate Limiting**: Built-in `minDelay` queue to prevent API throttling.
+- **Continuation**: Automatic recursion logic for large API queries.
+- **Markdown Logging**: Daily log files in Markdown, JSON, CSV, or Plain Text with independent verbosity controls.
+
+## Basic Usage
+```javascript
+import { WikiSession, WikiQuery } from '@Technical-13/mw-node-js';
+
+const session = new WikiSession( config );
+await session.login( decryptedPassword );
+
+const query = new WikiQuery( session );
+const data = await query.prop.get( { titles: 'Special:Statistics' } );
+```
+
+## Available Modules
+
+- **WikiQuery**: Data retrieval suite.
+  - `execute( params, limit )`: Raw API queries with auto-continuation until `limit` (default 10) or 'max'.
+  - **.prop**
+    - `get( params )`: Fetches properties of specific pages (e.g., revisions, categories).
+  - **.list**
+    - `get( params )`: Retrieves lists of data (e.g., search, categorymembers, users).
+  - **.meta**
+    - `get( params )`: Fetches site or user metadata (e.g., siteinfo, userinfo).
+  - **.generator**
+    - `get( params )`: Pipes list results into properties for bulk data retrieval.
+
+- **WikiAccount**: Identity and user management.
+  - `email( params )`: Sends an email to a wiki user (requires CSRF token).
+  - `get( params )`: Retrieves metadata for specific wiki users.
+  - `rights( params )`: Changes user group memberships (requires `userrights` token).
+  - `verify( username, token )`: Validates a token on a user's `Discord.json` subpage.
+
+- **WikiEdit**: Content modification.
+  - `post( params )`: Submits an edit. Automatically fetches CSRF tokens.
+
+- **WikiMaintenance**: Admin and moderation suite.
+  - `block( params )`: Prevents a user from performing wiki actions.
+  - `delete( params )`: Removes a page from the wiki.
+  - `move( params )`: Renames pages and talk pages.
+  - `patrol( params )`: Marks revisions as patrolled (requires `patrol` token).
+  - `protect( params )`: Modifies page protection levels.
+  - `revisionDelete( params )`: Masks revisions or logs. Falls back to deletion if suppression fails.
+  - `rollback( params )`: Reverts the last edits on a page (requires `rollback` token).
+  - `suppress( pageid, revid, reason )`: Wrapper for `revisionDelete` to hide specific content.
+  - `undelete( params )`: Restores deleted pages or revisions.
+
+- **WikiMedia**: File asset management.
+  - `upload( params )`: Uploads files to the wiki. Handles CSRF tokens.
+
+- **WikiParser**: processes wikitext.
+  - `parse( params )`: Converts wikitext to HTML or extracts metadata.
+
+- **WikiWatchlist**: personal watchlist management.
+  - `watch( params )`: Adds pages to the watchlist (requires `watch` token).
+  - `unwatch( params )`: Removes pages from the watchlist.
+
+- **WikiLogger**: Infrastructure utility.
+  - `error`, `warn`, `debug`, `info`, `log`: Methods to log at specific priority levels.
+  - **Independent Control**: Verbosity levels for the **console** and **log files** are configured separately in the `WikiSession` config (`consoleVerbosity` vs `fileVerbosity`).
+  - **Verbosity Levels**: 0 (None), 1 (Warn/Error), 2 (Debug), 3 (Everything).
+  - **Formats**: Supports 'md', 'json', 'csv', and 'txt' file extensions.
