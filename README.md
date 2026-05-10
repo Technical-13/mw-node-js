@@ -25,6 +25,44 @@ const data = await query.prop.get( { titles: 'Special:Statistics' } );
 
 ## Available Modules
 
+- **WikiSession (Auth)**: Handles the connection, authentication, and rate limiting.
+  - `login( password )`: Performs a standard MediaWiki login.
+  - `clientLogin( password )`: Performs a modern OAuth2-style login (recommended for MW 1.43+).
+  - `logout( )`: Ends the current session and clears cookies.
+  - `decryptPassword( data, iv, key )`: (Static) Helper to decrypt credentials for the config.
+
+- **WikiAccount**: Identity and user management.
+  - `email( params )`: Sends an email to a wiki user (requires CSRF token).
+  - `get( params )`: Retrieves metadata for specific wiki users.
+  - `rights( params )`: Changes user group memberships (requires `userrights` token).
+  - `verify( username, token )`: Validates a token on a user's `Discord.json` subpage.
+
+- **WikiEdit**: Content modification.
+  - `post( params )`: Submits an edit. Automatically fetches CSRF tokens.
+
+- **WikiLogger**: Infrastructure utility.
+  - `error`, `warn`, `debug`, `info`, `log`: Methods to log at specific priority levels.
+  - **Verbosity Levels**: 0 (None), 1 (Warn/Error), 2 (Debug), 3 (Everything).
+  - **Independent Control**: Configure `consoleVerbosity` vs `fileVerbosity` separately.
+  - **Formats**: Supports 'md', 'json', 'csv', and 'txt'.
+
+- **WikiMaintenance**: Admin and moderation suite.
+  - `block( params )`: Prevents a user from performing wiki actions.
+  - `delete( params )`: Removes a page from the wiki.
+  - `move( params )`: Renames pages and talk pages.
+  - `patrol( params )`: Marks revisions as patrolled (requires `patrol` token).
+  - `protect( params )`: Changes page protection levels.
+  - `revisionDelete( params )`: Masks revisions or logs. Falls back to deletion if suppression fails.
+  - `rollback( params )`: Reverts the last edits on a page (requires `rollback` token).
+  - `suppress( pageid, revid, reason )`: Wrapper for `revisionDelete` to hide specific content.
+  - `undelete( params )`: Restores deleted pages or revisions.
+
+- **WikiMedia**: File asset management.
+  - `upload( params )`: Uploads files to the wiki. Handles CSRF tokens.
+
+- **WikiParser**: Processes wikitext.
+  - `parse( params )`: Converts wikitext to HTML or extracts metadata.
+
 - **WikiQuery**: Data retrieval suite.
   - `execute( params, limit )`: Raw API queries with auto-continuation until `limit` (default 10) or 'max'.
   - **.prop**
@@ -36,41 +74,9 @@ const data = await query.prop.get( { titles: 'Special:Statistics' } );
   - **.generator**
     - `get( params )`: Pipes list results into properties for bulk data retrieval.
 
-- **WikiAccount**: Identity and user management.
-  - `email( params )`: Sends an email to a wiki user (requires CSRF token).
-  - `get( params )`: Retrieves metadata for specific wiki users.
-  - `rights( params )`: Changes user group memberships (requires `userrights` token).
-  - `verify( username, token )`: Validates a token on a user's `Discord.json` subpage.
-
-- **WikiEdit**: Content modification.
-  - `post( params )`: Submits an edit. Automatically fetches CSRF tokens.
-
-- **WikiMaintenance**: Admin and moderation suite.
-  - `block( params )`: Prevents a user from performing wiki actions.
-  - `delete( params )`: Removes a page from the wiki.
-  - `move( params )`: Renames pages and talk pages.
-  - `patrol( params )`: Marks revisions as patrolled (requires `patrol` token).
-  - `protect( params )`: Modifies page protection levels.
-  - `revisionDelete( params )`: Masks revisions or logs. Falls back to deletion if suppression fails.
-  - `rollback( params )`: Reverts the last edits on a page (requires `rollback` token).
-  - `suppress( pageid, revid, reason )`: Wrapper for `revisionDelete` to hide specific content.
-  - `undelete( params )`: Restores deleted pages or revisions.
-
-- **WikiMedia**: File asset management.
-  - `upload( params )`: Uploads files to the wiki. Handles CSRF tokens.
-
-- **WikiParser**: processes wikitext.
-  - `parse( params )`: Converts wikitext to HTML or extracts metadata.
-
-- **WikiWatchlist**: personal watchlist management.
+- **WikiWatchlist**: Personal watchlist management.
   - `watch( params )`: Adds pages to the watchlist (requires `watch` token).
   - `unwatch( params )`: Removes pages from the watchlist.
-
-- **WikiLogger**: Infrastructure utility.
-  - `error`, `warn`, `debug`, `info`, `log`: Methods to log at specific priority levels.
-  - **Independent Control**: Verbosity levels for the **console** and **log files** are configured separately in the `WikiSession` config (`consoleVerbosity` vs `fileVerbosity`).
-  - **Verbosity Levels**: 0 (None), 1 (Warn/Error), 2 (Debug), 3 (Everything).
-  - **Formats**: Supports 'md', 'json', 'csv', and 'txt' file extensions.
 
 ## Contributing
 Contributions are welcome! If you've found a bug or have a feature request, please use the templates found in the [Issues](https://github.com) tab:
