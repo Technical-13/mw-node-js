@@ -8,16 +8,15 @@ export class List {
   /**
    * Searches the wiki for pages matching a query.
    * 
-   * @param { string } srsearch - The search term.
-   * @param { number } srlimit - Number of results.
+   * @param { Object } params - Parameters for list=search.
    * @returns { Promise<Array> }
    */
-  async search( srsearch, srlimit = 10 ) {
+  async search( params ) {
     const res = await this.session._post( {
       action: 'query',
       list: 'search',
-      srsearch,
-      srlimit
+      srlimit: 10,
+      ...params
     } );
     return res.query.search;
   }
