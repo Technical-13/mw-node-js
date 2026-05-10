@@ -71,3 +71,15 @@ const data = await query.prop.get( { titles: 'Special:Statistics' } );
   - **Independent Control**: Verbosity levels for the **console** and **log files** are configured separately in the `WikiSession` config (`consoleVerbosity` vs `fileVerbosity`).
   - **Verbosity Levels**: 0 (None), 1 (Warn/Error), 2 (Debug), 3 (Everything).
   - **Formats**: Supports 'md', 'json', 'csv', and 'txt' file extensions.
+
+## Contributing
+Contributions are welcome! If you've found a bug or have a feature request, please use the templates found in the [Issues](https://github.com) tab:
+- **Bug Reports**: Provide your Node.js version and relevant `logs/*.md` snippets.
+- **Feature Requests**: Describe the problem and your proposed solution.
+
+## Support & Funding
+If this library has helped your bot project, consider supporting its development:
+- **GitHub Sponsors**: [Technical-13](https://github.com/Technical-13)
+- **PayPal**: [MagentaRV](https://paypal.me/MagentaRV)
+- **Cash App**: [$MagentaRV](https://cash.app/$MagentaRV)
+- **Venmo**: [@MagentaRV](https://venmo.com/@MagentaRV)
