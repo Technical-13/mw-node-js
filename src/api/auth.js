@@ -2,8 +2,8 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import pkg from '../../package.json' assert { type: 'json' };
+import { WikiLogger } from '../util/logger.js';
 import { WikiTokens } from './tokens.js';
-
 /**
  * WikiSession Class
  * Handles authentication, session persistence, and rate limiting.
@@ -17,26 +17,25 @@ export class WikiSession {
     this.password = null;
     this.cookieJar = '';
     this.keepAliveInterval = null;
+    this.logger = new WikiLogger( config.logDir );
     this.tokens = new WikiTokens( this );
     const metadata = this._getBotMetadata( );
     this.userAgent = 'mw-node-js (' + pkg.version + ') (Bot: ' + this.username + '; Version: ' + metadata.version + '; Author: ' + metadata.author + ')';
   }
-
   _getBotMetadata( ) {
     const data = { author: 'undefined', version: 'undefined' };
     try {
       const pkgPath = path.resolve( process.cwd( ), 'package.json' );
       const botPkg = JSON.parse( fs.readFileSync( pkgPath, 'utf8' ) );
       if ( botPkg.version ) data.version = botPkg.version;
-      else console.warn( 'Bot\'s package.json is missing a version number.' );
+      else this.logger.warn( 'Bot\'s package.json is missing a version number.' );
       if ( typeof botPkg.author === 'string' ) data.author = botPkg.author;
       else if ( botPkg.author && botPkg.author.name ) data.author = botPkg.author.name;
-      else console.warn( 'Bot\'s package.json is missing an author.' );
+      else this.logger.warn( 'Bot\'s package.json is missing an author.' );
     }
     catch ( e ) { }
     return data;
   }
-
   static decryptPassword( encryptedData, ivHex, keyHex ) {
     const key = Buffer.from( keyHex, 'hex' );
     const iv = Buffer.from( ivHex, 'hex' );
@@ -45,14 +44,12 @@ export class WikiSession {
     decrypted += decipher.final( 'utf8' );
     return decrypted;
   }
-
   async login( password ) {
     this.password = password;
     const success = await this._performLogin( );
     if ( success ) this._startKeepAlive( );
     return success;
   }
-
   async _performLogin( ) {
     try {
       const lgtoken = await this.tokens.get( 'login' );
@@ -65,11 +62,10 @@ export class WikiSession {
       return loginRes.login.result === 'Success';
     }
     catch ( error ) {
-      console.error( '[Wiki] Login failed: ' + error.message );
+      this.logger.error( '[Wiki] Login failed: ' + error.message );
       return false;
     }
   }
-
   async clientLogin( password ) {
     this.password = password;
     try {
@@ -88,11 +84,10 @@ export class WikiSession {
       return false;
     }
     catch ( error ) {
-      console.error( '[Wiki] ClientLogin failed: ' + error.message );
+      this.logger.error( '[Wiki] ClientLogin failed: ' + error.message );
       return false;
     }
   }
-
   async logout( ) {
     const token = await this.tokens.get( 'csrf' );
     await this._post( { action: 'logout', token: token } );
@@ -101,7 +96,6 @@ export class WikiSession {
     this.password = null;
     return true;
   }
-
   _startKeepAlive( ) {
     if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
     this.keepAliveInterval = setInterval( async ( ) => {
@@ -110,11 +104,10 @@ export class WikiSession {
         if ( res.query.userinfo.id === 0 ) await this._performLogin( );
       }
       catch ( err ) {
-        console.error( '[Wiki] Keep-alive failed: ' + err.message );
+        this.logger.error( '[Wiki] Keep-alive failed: ' + err.message );
       }
     }, 15 * 60 * 1000 );
   }
-
   async _post( params ) {
     const now = Date.now( );
     const timeSinceLast = now - this.lastRequestTime;
