@@ -1,0 +1,39 @@
+{
+  "name": "@Technical-13/mw-node-js",
+  "version": "1.0.0",
+  "lastUpdated": "2024-05-10T14:30:00Z",
+  "description": "A modular library for Discord.js v14 and MediaWiki 1.43+ with encrypted authentication.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./api": "./src/api/auth.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com"
+  },
+  "publishConfig": {
+    "registry": "https://github.com"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "discord.js",
+    "mediawiki",
+    "bot",
+    "wiki",
+    "mw-1.43"
+  ],
+  "author": "Technical-13",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  }
+}
