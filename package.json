@@ -1,13 +1,20 @@
 {
   "name": "@Technical-13/mw-node-js",
-  "version": "1.0.0",
-  "lastUpdated": "2024-05-10T14:30:00Z",
-  "description": "A modular library for Discord.js v14 and MediaWiki 1.43+ with encrypted authentication.",
+  "version": "1.1.0",
+  "lastUpdated": "2026-05-10T17:35:00Z",
+  "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth and rate limiting.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./api": "./src/api/auth.js"
+    "./auth": "./src/api/auth.js",
+    "./query": "./src/api/query.js",
+    "./edit": "./src/api/edit.js",
+    "./account": "./src/api/account.js",
+    "./maintenance": "./src/api/maintenance.js",
+    "./media": "./src/api/media.js",
+    "./parser": "./src/api/parser.js",
+    "./watchlist": "./src/api/watchlist.js"
   },
   "repository": {
     "type": "git",
@@ -19,21 +26,9 @@
   "engines": {
     "node": ">=22.0.0"
   },
-  "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
-  },
-  "keywords": [
-    "discord.js",
-    "mediawiki",
-    "bot",
-    "wiki",
-    "mw-1.43"
-  ],
   "author": "Technical-13",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "dependencies": {
-    "discord.js": "^14.15.3",
     "dotenv": "^16.4.5"
   }
 }
