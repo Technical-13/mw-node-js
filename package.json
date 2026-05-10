@@ -1,8 +1,8 @@
 {
   "name": "@Technical-13/mw-node-js",
-  "version": "1.1.0",
-  "lastUpdated": "2026-05-10T17:35:00Z",
-  "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth and rate limiting.",
+  "version": "1.0.1",
+  "lastUpdated": "2026-05-10T14:50:00Z",
+  "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth, rate limiting, and markdown logging.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -14,7 +14,8 @@
     "./maintenance": "./src/api/maintenance.js",
     "./media": "./src/api/media.js",
     "./parser": "./src/api/parser.js",
-    "./watchlist": "./src/api/watchlist.js"
+    "./watchlist": "./src/api/watchlist.js",
+    "./logger": "./src/util/logger.js"
   },
   "repository": {
     "type": "git",
