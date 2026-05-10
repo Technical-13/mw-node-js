@@ -6,22 +6,26 @@ export class Generator {
   constructor( session ) { this.session = session; }
 
   /**
-   * Gets content for all pages in a specific category.
+   * Executes a generator query using generic parameters.
    * 
-   * @param { string } category - Category name.
-   * @param { number } gcmlimit - Max pages to fetch.
-   * @returns { Promise<Array> }
+   * @param { Object } params - Parameters for generator query.
+   * @returns { Promise<Array|null> }
    */
-  async getCategoryContent( category, gcmlimit = 10 ) {
-    const res = await this.session._post( {
-      action: 'query',
-      generator: 'categorymembers',
-      gcmtitle: category,
-      gcmlimit,
-      prop: 'revisions',
-      rvprop: 'content',
-      rvslots: 'main'
-    } );
-    return res.query.pages;
+  async get( params ) {
+    try {
+      const res = await this.session._post( {
+        action: 'query',
+        prop: 'revisions',
+        rvprop: 'content',
+        rvslots: 'main',
+        gcmlimit: 10,
+        ...params
+      } );
+      return res.query.pages;
+    }
+    catch ( e ) {
+      console.error( '[Wiki] Generator failure: ' + e.message );
+      return null;
+    }
   }
 }
