@@ -6,17 +6,22 @@ export class Meta {
   constructor( session ) { this.session = session; }
 
   /**
-   * Retrieves info about the logged-in bot account.
+   * Executes a meta query using generic parameters.
    * 
-   * @param { Object } params - Optional parameters for meta=userinfo.
-   * @returns { Promise<Object> }
+   * @param { Object } params - Parameters for meta query.
+   * @returns { Promise<Object|null> }
    */
-  async getUserInfo( params = { uiprop: 'groups|rights|editcount' } ) {
-    const res = await this.session._post( {
-      action: 'query',
-      meta: 'userinfo',
-      ...params
-    } );
-    return res.query.userinfo;
+  async get( params ) {
+    try {
+      const res = await this.session._post( {
+        action: 'query',
+        ...params
+      } );
+      return res.query;
+    }
+    catch ( e ) {
+      console.error( '[Wiki] Meta failure: ' + e.message );
+      return null;
+    }
   }
 }
