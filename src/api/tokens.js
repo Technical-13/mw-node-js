@@ -1,15 +1,12 @@
 /**
  * WikiTokens Class
- * A centralized utility for fetching various MediaWiki API tokens.
+ * A centralized utility for fetching and validating MediaWiki API tokens.
  */
 export class WikiTokens {
   constructor( session ) { this.session = session; }
 
   /**
    * Retrieves a specific type of token from the API.
-   * 
-   * @param { string } type - The token type (e.g., 'csrf', 'login', 'patrol', 'rollback', 'watch', 'createaccount').
-   * @returns { Promise<string|null> } - The hex token string or null on failure.
    */
   async get( type = 'csrf' ) {
     try {
@@ -30,6 +27,28 @@ export class WikiTokens {
     catch ( e ) {
       console.error( '[Wiki] Failed to fetch ' + type + ' token: ' + e.message );
       return null;
+    }
+  }
+
+  /**
+   * Validates the validity of a specific token using action=checktoken.
+   * 
+   * @param { string } type - The token type to test.
+   * @param { string } token - The token string to validate.
+   * @param { number } maxtokenage - Maximum allowed age of the token in seconds.
+   * @returns { Promise<boolean> } - True if valid, false otherwise.
+   */
+  async validate( type, token, maxtokenage ) {
+    try {
+      const normalizedType = type.toLowerCase( );
+      const params = { action: 'checktoken', type: normalizedType, token: token };
+      if ( maxtokenage ) params.maxtokenage = maxtokenage;
+      const res = await this.session._post( params );
+      return res.checktoken.result === 'valid';
+    }
+    catch ( e ) {
+      console.error( '[Wiki] Token validation failed: ' + e.message );
+      return false;
     }
   }
 }
