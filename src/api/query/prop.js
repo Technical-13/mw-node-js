@@ -6,26 +6,26 @@ export class Prop {
   constructor( session ) { this.session = session; }
 
   /**
-   * Retrieves the raw wikitext content of a specific page.
+   * Retrieves page properties using a generic params object.
    * 
-   * @param { string } title - The title of the page.
-   * @returns { Promise<string|null> }
+   * @param { Object } params - Parameters for prop query.
+   * @returns { Promise<Object|null> }
    */
-  async getPageText( title ) {
+  async get( params ) {
     try {
       const res = await this.session._post( {
         action: 'query',
         prop: 'revisions',
-        titles: title,
         rvprop: 'content',
-        rvslots: 'main'
+        rvslots: 'main',
+        ...params
       } );
       const page = res.query.pages;
       if ( !page || page.missing ) return null;
-      return page.revisions.slots.main.content;
+      return page;
     }
     catch ( e ) {
-      console.error( '[Wiki] Prop failure for ' + title + ': ' + e.message );
+      console.error( '[Wiki] Prop failure: ' + e.message );
       return null;
     }
   }
