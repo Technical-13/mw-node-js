@@ -1,7 +1,8 @@
 {
   "plugins": [ "perfectionist", "jsdoc" ],
   "rules": {
-    "brace-style": [ "error", "stroustrup" ],
+    "no-trailing-spaces": "error",
+    "brace-style": [ "error", "stroustrup", { "allowSingleLine": true } ],
     "space-in-parens": [ "error", "always", { "exceptions": [ "empty" ] } ],
     "object-curly-spacing": [ "error", "always" ],
     "array-bracket-spacing": [ "error", "always" ],
