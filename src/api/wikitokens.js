@@ -14,19 +14,19 @@ export class WikiTokens {
       const normalizedType = type.toLowerCase();
       const validTypes = [ 'createaccount', 'csrf', 'login', 'patrol', 'rollback', 'userrights', 'watch' ];
       if ( !validTypes.includes( normalizedType ) ) {
-        this.session.logger.error( '[Wiki] Invalid token type requested: ' + type );
+        this.session.logger.error( 'WikiSession.tokens.get( ' + type + ' ) is an invalid token type request.' );
         return null;
       }
       const res = await this.session._post( { action: 'query', meta: 'tokens', type: normalizedType } );
       const tokenKey = normalizedType + 'token';
       if ( !res.query.tokens[ tokenKey ] ) {
-        this.session.logger.error( '[Wiki] API did not return a ' + type + ' token. Check user permissions.' );
+        this.session.logger.error( 'WikiSession.tokens.get( ' + type + ' ) did not return a token. Check user permissions.' );
         return null;
       }
       return res.query.tokens[ tokenKey ];
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Failed to fetch ' + type + ' token: ' + e.message );
+      this.session.logger.error( 'WikiSession.tokens.get( ' + type + ' ) failed to fetch token: ' + e.message );
       return null;
     }
   }
@@ -47,7 +47,7 @@ export class WikiTokens {
       return res.checktoken.result === 'valid';
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Token validation failed: ' + e.message );
+      this.session.logger.error( 'WikiSession.tokens.validate( \'' + type + '\', \'' + token + '\', ... ) failed: ' + e.message );
       return false;
     }
   }
