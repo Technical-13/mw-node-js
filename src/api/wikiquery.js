@@ -7,13 +7,14 @@ import { WikiProp } from './query/wikiprop.js';
  * WikiQuery handles all data retrieval and search actions from the MediaWiki API.
  */
 export class WikiQuery {
-  constructor( session ) {
-    this.session = session;
-    this.generator = new WikiGenerator( session );
-    this.list = new WikiList( session );
-    this.meta = new WikiMeta( session );
-    this.prop = new WikiProp( session );
-  }
+  constructor( session ) { this.session = session; }
+
+  /**
+   * Internal helper to join arrays into pipe-separated strings.
+   * @param {string|string[]} val - The value to normalize.
+   * @returns {string} Pipe-separated string.
+   */
+  _join( val ) { return Array.isArray( val ) ? val.join( '|' ) : val; }
 
   /**
    * Executes a continued query to handle large results automatically.
@@ -32,10 +33,10 @@ export class WikiQuery {
         if ( res.query ) {
           for ( const [ key, value ] of Object.entries( res.query ) ) {
             if ( !fullResults[ key ] ) fullResults[ key ] = value;
-            else if ( Array.isArray( value ) ) fullResults[key] = fullResults[ key ].concat( value );
+            else if ( Array.isArray( value ) ) fullResults[ key ] = fullResults[ key ].concat( value );
             else if ( typeof value === 'object' ) Object.assign( fullResults[ key ], value );
           }
-          const primaryKey = Object.keys( res.query )[ 0 ];
+          const primaryKey = Object.keys( res.query );
           totalFetched += Array.isArray( res.query[ primaryKey ] ) ? res.query[ primaryKey ].length : 1;
         }
         if ( !res.continue || ( limit !== 'max' && totalFetched >= limit ) ) break;
@@ -50,34 +51,34 @@ export class WikiQuery {
   }
 
   /**
-   * Performs a standard GET query to retrieve data.
-   * @param {Object} params - Parameters for the query action.
-   * @returns {Promise} Result of the query.
+   * Executes a generator query.
+   * @param {string|string[]} type - The generator type.
+   * @param {Object} params - Additional parameters.
+   * @returns {Promise} Result data.
    */
-  async get( params ) {
-    try {
-      const res = await this.session._get( { action: 'query', ...params } );
-      return res.query;
-    }
-    catch ( e ) {
-      this.session.logger.error( '[Wiki] Query failure: ' + e.message );
-      return null;
-    }
-  }
+  async generator( type, params ) { return await wikigenerator( this.session, this._join( type ), params ); }
 
   /**
-   * Performs a POST query, useful for large parameter sets or generators.
-   * @param {Object} params - Parameters for the query action.
-   * @returns {Promise} Result of the query.
+   * Executes a list query.
+   * @param {string|string[]} type - The list type.
+   * @param {Object} params - Additional parameters.
+   * @returns {Promise} Result data.
    */
-  async post( params ) {
-    try {
-      const res = await this.session._post( { action: 'query', ...params } );
-      return res.query;
-    }
-    catch ( e ) {
-      this.session.logger.error( '[Wiki] POST query failure: ' + e.message );
-      return null;
-    }
-  }
+  async list( type, params ) { return await wikilist( this.session, this._join( type ), params ); }
+
+  /**
+   * Executes a meta query.
+   * @param {string|string[]} type - The meta type.
+   * @param {Object} params - Additional parameters.
+   * @returns {Promise} Result data.
+   */
+  async meta( type, params ) { return await wikimeta( this.session, this._join( type ), params ); }
+
+  /**
+   * Executes a prop query.
+   * @param {string|string[]} type - The prop type.
+   * @param {Object} params - Additional parameters.
+   * @returns {Promise} Result data.
+   */
+  async prop( type, params ) { return await wikiprop( this.session, this._join( type ), params ); }
 }
