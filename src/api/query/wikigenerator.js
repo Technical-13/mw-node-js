@@ -19,7 +19,7 @@ export async function WikiGenerator( session, type, params ) {
     return res.query.pages;
   }
   catch ( e ) {
-    session.logger.error( '[Wiki] Generator failure: ' + e.message );
+    session.logger.error( 'WikiSession.query.generator( ' + type + ', ... ) failure: ' + e.message );
     return null;
   }
 }
