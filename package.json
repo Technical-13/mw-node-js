@@ -41,7 +41,7 @@
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2.1.0",
     "eslint": "^9.2.0",
-    "eslint-plugin-jsdoc": "^48.2.3",
+    "eslint-plugin-jsdoc": "^62.9.0",
     "eslint-plugin-perfectionist": "^2.10.0"
   }
 }
