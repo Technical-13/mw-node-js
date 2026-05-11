@@ -13,11 +13,11 @@ export class WikiAccount {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'emailuser', ...params } );
-      if ( res.emailuser ) this.session.logger.info( '[Wiki] Email sent to: ' + params.target );
+      if ( res.emailuser ) this.session.logger.info( 'WikiSession.account.email( ... ) sent to: ' + params.target );
       return res.emailuser;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.email( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.account.email( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -33,7 +33,7 @@ export class WikiAccount {
       return res.query.users;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.getUser( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.account.getUser( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -53,7 +53,7 @@ export class WikiAccount {
       return res;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.verify( \'' + user +'\', ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.account.verify( \'' + user +'\', ... ) failure: ' + e.message );
       return null;
     }
   }
