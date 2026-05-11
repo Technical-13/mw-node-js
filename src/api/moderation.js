@@ -15,7 +15,8 @@ class WikiModeration {
       const res = await this.session._post( { action: 'block', ...params } );
       if ( res.block ) this.session.logger.info( '[Wiki] User blocked: ' + res.block.user );
       return res.block;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Block failure: ' + e.message );
       return null;
     }
@@ -32,7 +33,8 @@ class WikiModeration {
       const res = await this.session._post( { action: 'unblock', ...params } );
       if ( res.unblock ) this.session.logger.info( '[Wiki] User unblocked: ' + res.unblock.user );
       return res.unblock;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Unblock failure: ' + e.message );
       return null;
     }
@@ -49,7 +51,8 @@ class WikiModeration {
       const res = await this.session._post( { action: 'userrights', ...params } );
       if ( res.userrights ) this.session.logger.info( '[Wiki] Rights updated for: ' + res.userrights.user );
       return res.userrights;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] User rights failure: ' + e.message );
       return null;
     }
