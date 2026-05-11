@@ -134,7 +134,7 @@ Contributions are welcome! Use the templates in the [Issues](https://github.com/
 
 ## Support & Funding
 If this library has helped your bot project, consider supporting its development:
-- **GitHub Sponsors**: [Technical-13](https://github.com/Technical-13)
+- **GitHub Sponsors**: [Technical-13](https://github.com/sponsors/Technical-13)
 - **PayPal**: [MagentaRV](https://paypal.me/MagentaRV)
 - **Cash App**: [$MagentaRV](https://cash.app/$MagentaRV)
-- **Venmo**: [@MagentaRV](https://venmo.com/u/@MagentaRV)
+- **Venmo**: [@MagentaRV](https://venmo.com/u/MagentaRV)
