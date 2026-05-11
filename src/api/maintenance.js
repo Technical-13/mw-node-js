@@ -13,7 +13,8 @@ export class WikiMaintenance {
     try {
       const res = await this.session._get( { action: 'compare', ...params } );
       return res.compare;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Compare failure: ' + e.message );
       return null;
     }
@@ -30,7 +31,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'delete', ...params } );
       if ( res.delete ) this.session.logger.info( '[Wiki] Page deleted: ' + res.delete.title );
       return res.delete;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Delete failure: ' + e.message );
       return null;
     }
@@ -47,7 +49,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'managetags', ...params } );
       if ( res.managetags ) this.session.logger.info( '[Wiki] Tag management successful' );
       return res.managetags;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Tag management failure: ' + e.message );
       return null;
     }
@@ -64,7 +67,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'move', ...params } );
       if ( res.move ) this.session.logger.info( '[Wiki] Page moved: ' + res.move.from + ' -> ' + res.move.to );
       return res.move;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Move failure: ' + e.message );
       return null;
     }
@@ -81,7 +85,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'patrol', ...params } );
       if ( res.patrol ) this.session.logger.info( '[Wiki] Patrolled revision: ' + res.patrol.rcid );
       return res.patrol;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Patrol failure: ' + e.message );
       return null;
     }
@@ -98,7 +103,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'protect', ...params } );
       if ( res.protect ) this.session.logger.info( '[Wiki] Page protected: ' + res.protect.title );
       return res.protect;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Protect failure: ' + e.message );
       return null;
     }
@@ -114,7 +120,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'purge', ...params } );
       if ( res.purge ) this.session.logger.info( '[Wiki] Purge successful' );
       return res.purge;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Purge failure: ' + e.message );
       return null;
     }
@@ -131,7 +138,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'revisiondelete', ...params } );
       if ( res.revisiondelete ) this.session.logger.info( '[Wiki] Revision visibility updated' );
       return res.revisiondelete;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Revision delete failure: ' + e.message );
       return null;
     }
@@ -148,7 +156,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'rollback', ...params } );
       if ( res.rollback ) this.session.logger.info( '[Wiki] Rollback successful on: ' + res.rollback.title );
       return res.rollback;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Rollback failure: ' + e.message );
       return null;
     }
@@ -176,7 +185,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'tag', ...params } );
       if ( res.tag ) this.session.logger.info( '[Wiki] Tags updated successfully' );
       return res.tag;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Tag update failure: ' + e.message );
       return null;
     }
@@ -193,7 +203,8 @@ export class WikiMaintenance {
       const res = await this.session._post( { action: 'undelete', ...params } );
       if ( res.undelete ) this.session.logger.info( '[Wiki] Page restored: ' + res.undelete.title );
       return res.undelete;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Undelete failure: ' + e.message );
       return null;
     }
