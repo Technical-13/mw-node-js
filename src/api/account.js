@@ -15,7 +15,8 @@ export class WikiAccount {
       const res = await this.session._post( { action: 'emailuser', ...params } );
       if ( res.emailuser ) this.session.logger.info( '[Wiki] Email sent to: ' + params.target );
       return res.emailuser;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Email failure: ' + e.message );
       return null;
     }
@@ -30,7 +31,8 @@ export class WikiAccount {
     try {
       const res = await this.session._get( { action: 'query', list: 'users', ...params } );
       return res.query.users;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] User query failure: ' + e.message );
       return null;
     }
@@ -49,7 +51,8 @@ export class WikiAccount {
       const res = await this.session.moderation.userrights( { user: user, add: 'verified', reason: reason } );
       if ( res ) await this.session.maintenance.suppress( pageid, revid, reason );
       return res;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Verification failure: ' + e.message );
       return null;
     }
