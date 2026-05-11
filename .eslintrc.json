@@ -1,0 +1,20 @@
+{
+  "plugins": [ "perfectionist", "jsdoc" ],
+  "rules": {
+    "brace-style": [ "error", "stroustrup" ],
+    "space-in-parens": [ "error", "always", { "exceptions": [ "empty" ] } ],
+    "object-curly-spacing": [ "error", "always" ],
+    "array-bracket-spacing": [ "error", "always" ],
+    "perfectionist/sort-classes": [ "error", {
+      "type": "alphabetical", "order": "asc",
+      "groups": [ "private-methods", "constructor", "method" ],
+      "customGroups": [ { "groupName": "private-methods", "selector": "method", "elementNamePattern": "^_" } ]
+    } ],
+    "quotes": [ "error", "single" ],
+    "no-template-curly-in-string": "error",
+    "jsdoc/require-jsdoc": [ "error", { "require": { "ClassDeclaration": true, "MethodDefinition": true } } ],
+    "jsdoc/require-description": "error",
+    "jsdoc/require-param": "error",
+    "jsdoc/require-returns": "error"
+  }
+}
