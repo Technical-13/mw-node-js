@@ -15,7 +15,7 @@ export async function WikiList( session, type, params ) {
     return res.query;
   }
   catch ( e ) {
-    session.logger.error( '[Wiki] List failure: ' + e.message );
+    session.logger.error( 'WikiSession.query.list( ' + type + ', ... ) failure: ' + e.message );
     return null;
   }
 }
