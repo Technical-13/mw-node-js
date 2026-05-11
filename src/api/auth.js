@@ -1,132 +1,110 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
-import pkg from '../../package.json' assert { type: 'json' };
-import { WikiLogger } from '../util/logger.js';
-import { WikiTokens } from './tokens.js';
 /**
- * WikiSession Class
- * Handles authentication, session persistence, and rate limiting.
+ * WikiAuth handles user authentication, session management, and login flows.
  */
-export class WikiSession {
-  constructor( config ) {
-    this.apiUrl = config.entrypoint;
-    this.username = config.username;
-    this.minDelay = config.minDelay || 1000;
-    this.lastRequestTime = 0;
-    this.password = null;
-    this.cookieJar = '';
-    this.keepAliveInterval = null;
-    this.logger = new WikiLogger( config.logDir );
-    this.tokens = new WikiTokens( this );
-    const metadata = this._getBotMetadata( );
-    this.userAgent = 'mw-node-js (' + pkg.version + ') (Bot: ' + this.username + '; Version: ' + metadata.version + '; Author: ' + metadata.author + ')';
-  }
-  _getBotMetadata( ) {
-    const data = { author: 'undefined', version: 'undefined' };
+export class WikiAuth {
+  constructor( session ) { this.session = session; }
+
+  /**
+   * Changes authentication data for the current user (e.g., password change).
+   * @param {Object} params - Parameters for the changeauthenticationdata action.
+   * @returns {Promise} Result of the action.
+   */
+  async changeauthenticationdata( params ) {
     try {
-      const pkgPath = path.resolve( process.cwd( ), 'package.json' );
-      const botPkg = JSON.parse( fs.readFileSync( pkgPath, 'utf8' ) );
-      if ( botPkg.version ) data.version = botPkg.version;
-      else this.logger.warn( 'Bot\'s package.json is missing a version number.' );
-      if ( typeof botPkg.author === 'string' ) data.author = botPkg.author;
-      else if ( botPkg.author && botPkg.author.name ) data.author = botPkg.author.name;
-      else this.logger.warn( 'Bot\'s package.json is missing an author.' );
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'changeauthenticationdata', ...params } );
+      if ( res.changeauthenticationdata ) this.session.logger.info( '[Wiki] Authentication data changed' );
+      return res.changeauthenticationdata;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Change auth data failure: ' + e.message );
+      return null;
     }
-    catch ( e ) { }
-    return data;
   }
-  static decryptPassword( encryptedData, ivHex, keyHex ) {
-    const key = Buffer.from( keyHex, 'hex' );
-    const iv = Buffer.from( ivHex, 'hex' );
-    const decipher = crypto.createDecipheriv( 'aes-256-cbc', key, iv );
-    let decrypted = decipher.update( encryptedData, 'hex', 'utf8' );
-    decrypted += decipher.final( 'utf8' );
-    return decrypted;
-  }
-  async login( password ) {
-    this.password = password;
-    const success = await this._performLogin( );
-    if ( success ) this._startKeepAlive( );
-    return success;
-  }
-  async _performLogin( ) {
+
+  /**
+   * Performs a modern client-side login to the wiki.
+   * @param {Object} params - Parameters for the clientlogin action.
+   * @returns {Promise} Result of the login attempt.
+   */
+  async clientlogin( params ) {
     try {
-      const lgtoken = await this.tokens.get( 'login' );
-      const loginRes = await this._post( {
-        action: 'login',
-        lgname: this.username,
-        lgpassword: this.password,
-        lgtoken: lgtoken
-      } );
-      return loginRes.login.result === 'Success';
-    }
-    catch ( error ) {
-      this.logger.error( '[Wiki] Login failed: ' + error.message );
-      return false;
+      if ( !params.logintoken ) params.logintoken = await this.session.tokens.get( 'login' );
+      const res = await this.session._post( { action: 'clientlogin', ...params } );
+      if ( res.clientlogin && res.clientlogin.status === 'PASS' ) {
+        this.session.logger.info( '[Wiki] ClientLogin successful for: ' + res.clientlogin.username );
+      }
+      return res.clientlogin;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] ClientLogin failure: ' + e.message );
+      return null;
     }
   }
-  async clientLogin( password ) {
-    this.password = password;
+
+  /**
+   * Legacy login method for environments where clientlogin is unavailable.
+   * @param {Object} params - Parameters for the legacy login action.
+   * @returns {Promise} Result of the login attempt.
+   */
+  async login( params ) {
     try {
-      const lgtoken = await this.tokens.get( 'login' );
-      const loginRes = await this._post( {
-        action: 'clientlogin',
-        username: this.username,
-        password: this.password,
-        logintoken: lgtoken,
-        loginreturnurl: this.apiUrl
-      } );
-      if ( loginRes.clientlogin.status === 'PASS' ) {
-        this._startKeepAlive( );
-        return true;
+      if ( !params.lgtoken ) params.lgtoken = await this.session.tokens.get( 'login' );
+      const res = await this.session._post( { action: 'login', ...params } );
+      if ( res.login && res.login.result === 'Success' ) {
+        this.session.logger.info( '[Wiki] Legacy login successful for: ' + res.login.lgusername );
       }
-      return false;
-    }
-    catch ( error ) {
-      this.logger.error( '[Wiki] ClientLogin failed: ' + error.message );
-      return false;
+      return res.login;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Legacy login failure: ' + e.message );
+      return null;
     }
   }
-  async logout( ) {
-    const token = await this.tokens.get( 'csrf' );
-    await this._post( { action: 'logout', token: token } );
-    if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
-    this.cookieJar = '';
-    this.password = null;
-    return true;
-  }
-  _startKeepAlive( ) {
-    if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
-    this.keepAliveInterval = setInterval( async ( ) => {
-      try {
-        const res = await this._post( { action: 'query', meta: 'userinfo' } );
-        if ( res.query.userinfo.id === 0 ) await this._performLogin( );
-      }
-      catch ( err ) {
-        this.logger.error( '[Wiki] Keep-alive failed: ' + err.message );
-      }
-    }, 15 * 60 * 1000 );
-  }
-  async _post( params ) {
-    const now = Date.now( );
-    const timeSinceLast = now - this.lastRequestTime;
-    if ( timeSinceLast < this.minDelay ) {
-      await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) );
+
+  /**
+   * Log out and end the current session.
+   * @returns {Promise} Result of the logout action.
+   */
+  async logout() {
+    try {
+      const res = await this.session._post( { action: 'logout' } );
+      this.session.logger.info( '[Wiki] Logged out successfully' );
+      return res;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Logout failure: ' + e.message );
+      return null;
     }
-    this.lastRequestTime = Date.now( );
-    const body = new URLSearchParams( { ...params, format: 'json', formatversion: '2' } );
-    const res = await fetch( this.apiUrl, {
-      method: 'POST',
-      body,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Cookie': this.cookieJar,
-        'User-Agent': this.userAgent
-      }
-    } );
-    const cookies = res.headers.get( 'set-cookie' );
-    if ( cookies ) this.cookieJar = cookies.split( ',' ).map( c => c.split( ';' ) ).join( '; ' );
-    return await res.json( );
+  }
+
+  /**
+   * Removes authentication data for the current user.
+   * @param {Object} params - Parameters for the removeauthenticationdata action.
+   * @returns {Promise} Result of the action.
+   */
+  async removeauthenticationdata( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'removeauthenticationdata', ...params } );
+      if ( res.removeauthenticationdata ) this.session.logger.info( '[Wiki] Authentication data removed' );
+      return res.removeauthenticationdata;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Remove auth data failure: ' + e.message );
+      return null;
+    }
+  }
+
+  /**
+   * Sends a password reset email or resets the password via token.
+   * @param {Object} params - Parameters for the resetpassword action.
+   * @returns {Promise} Result of the action.
+   */
+  async resetpassword( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'resetpassword', ...params } );
+      if ( res.resetpassword ) this.session.logger.info( '[Wiki] Password reset action triggered' );
+      return res.resetpassword;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Reset password failure: ' + e.message );
+      return null;
+    }
   }
 }
