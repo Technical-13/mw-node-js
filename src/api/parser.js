@@ -13,7 +13,8 @@ export class WikiParser {
     try {
       const res = await this.session._post( { action: 'expandtemplates', ...params } );
       return res.expandtemplates;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Template expansion failure: ' + e.message );
       return null;
     }
@@ -28,7 +29,8 @@ export class WikiParser {
     try {
       const res = await this.session._post( { action: 'parse', ...params } );
       return res.parse;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Parse failure: ' + e.message );
       return null;
     }
