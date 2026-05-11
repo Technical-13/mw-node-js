@@ -25,7 +25,8 @@ export class WikiWatchlist {
         this.session.logger.info( '[Wiki] Page ' + status + ' watchlist: ' + res.watch.title );
       }
       return res.watch;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Watchlist update failure: ' + e.message );
       return null;
     }
