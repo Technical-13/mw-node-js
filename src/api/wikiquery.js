@@ -45,7 +45,7 @@ export class WikiQuery {
       return fullResults;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Continued query failed: ' + e.message );
+      this.session.logger.error( 'WikiSession.query.execute( ... ) failed to continue: ' + e.message );
       return null;
     }
   }
