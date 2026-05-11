@@ -1,136 +1,159 @@
 # mw-node-js (v1.0.1)
-A modular Node.js 22+ library for MediaWiki 1.43+ and Discord.js v14 bots.
+A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limiting, and markdown logging.
 
 ## Package Metadata
 - **Current Version**: 1.0.1
-- **Last Updated**: 2026-05-10T18:52:48Z
+- **Last Updated**: 2026-05-11T10:00:00Z
 - **Tracking**: Check `package.json` for the `lastUpdated` key.
 
 ## Features
 - **Encrypted Auth**: Securely handle wiki credentials using AES-256-CBC.
-- **Rate Limiting**: Built-in `minDelay` queue to prevent API throttling.
-- **Continuation**: Automatic recursion logic for large API queries.
-- **Flexible Logging**: Daily or incremental logs in Markdown, JSON, CSV, or Plain Text with independent verbosity controls.
+- **Rate Limiting**: Built-in `minDelay` queue and native `fetch` handling to prevent API throttling.
+- **Continuation**: `WikiQuery.execute()` handles recursion logic for large API queries automatically.
+- **Flexible Logging**: Daily or incremental logs in Markdown, JSON, CSV, or Plain Text with collision-proof `|TAG|` placeholders.
+- **Modular Design**: Separated concerns for Authentication, Maintenance, Moderation, and specialized Queries.
 
 ## Configuration
-The `WikiSession` requires a configuration object, typically stored in a `wikiconfig.json` file.
+
+Setting up your bot requires two files: a private environment file and a public configuration file.
+
+### Step 1: Create a `.env` file
+In your project root, create a file named `.env`. This file stores your "private keys" and should **never** be shared or uploaded to GitHub.
+```text
+WIKI_ENCRYPTION_KEY=your_64_character_hex_key_here
+WIKI_ENCRYPTION_SEED=your_32_character_hex_seed_here
+```
+
+### Step 2: Create a `wikiconfig.json` file
+Create a file named `wikiconfig.json` to store your non-sensitive bot settings.
+
+**Note on encryptedPassword**: You must encrypt your wiki password before putting it here.
+1. Navigate to the `/tools` folder in this repository.
+2. Open your terminal (**PowerShell**, **Command Prompt** (*cmd.exe*), or **Bash**) and run the encryptor using your **Key** and **Seed** from Step 1:
+   ```bash
+   java -jar WikiEncryptor.jar <your_key> <your_seed> "your_actual_password"
+   ```
+   - *Note: You must have the **Java Runtime Environment (JRE)** installed to run the encryptor.*
+     - *If you do not have it, you can download it from [Java.com](https://java.com).*
+3. Copy the resulting Hex string into the field below:
 
 ```json
 {
-  "entrypoint": "https://your-wiki.com/wiki/api.php",
+  "apiUrl": "https://your-wiki.com",
   "username": "YourBotName",
+  "encryptedPassword": "ENCRYPTED_HEX_RESULT",
+  "userAgent": "MyWikiBot/1.0.0",
   "minDelay": 1000,
   "logDir": "./logs",
-  "logName": "Wiki-YYYYMMDD",
+  "logName": "Wiki-|YYYY||MM||DD|",
   "logFormat": "md",
   "consoleVerbosity": 1,
   "fileVerbosity": 3
 }
 ```
 
-- **entrypoint**: The full URL to your wiki's `api.php`:
-  - This can be found on your wiki at **`Special:Version#mw-version-entrypoints`**.
-- **username**: The wiki account name for the bot.
-- **minDelay**: Milliseconds to wait between requests (prevents rate-limiting).
-- **logDir**: Path to store log files (Default: `./logs`).
-- **logName**: Filename template. Supports dynamic placeholders:
-  - `YYYY`: 4-digit Year.
-  - `MM`: 2-digit Month.
-  - `DD`: 2-digit Day.
-  - `##`: Incremental counter (scans directory for the next available integer).
-- **logFormat**: 'md', 'json', 'csv', or 'txt' (Default: 'md').
+#### Detailed Variable Guide:
+- **apiUrl**: The full URL to your wiki's `api.php`.
+- **minDelay**: The "speed limit" in milliseconds between requests (1000 = 1 second). Use this to avoid tripping anti-spam triggers or being throttled by the server.
+- **logName**: The template for your log files. The logger **appends** to the same file until the placeholders result in a new filename.
+  - `|YYYY|`: Replaced with the current 4-digit Year.
+  - `|MM|`: Replaced with the current 2-digit Month.
+  - `|DD|`: Replaced with the current 2-digit Day.
+  - `|##|`: An auto-incrementing number. Use this if you want to start a fresh log file manually or if you need multiple logs for the same day.
 - **Verbosity Levels**:
-  - `0`: No logging.
-  - `1`: Only Warnings and Errors (Default).
-  - `2`: Debugging (Warnings, Errors, and Debug messages).
-  - `3`: Everything (Info, Debug, Warnings, Errors, and Logs).
-  - *Note*: `consoleVerbosity` and `fileVerbosity` are configured independently.
+  - `0`: Silent. No logs will be produced.
+  - `1`: Warn/Error. Only logs system failures or warnings. Recommended for stable production bots.
+  - `2`: Debug. Includes warning, errors, and granular debugging messages to trace logic.
+  - `3`: Firehose. Logs everything including informational messages and raw API interactions.
 
-## Basic Usage
+### Step 3: Initialization
+When you start your bot, you must "inject" the private keys from your `.env` into the configuration.
 ```javascript
 import 'dotenv/config';
 import fs from 'node:fs';
-import { WikiSession, WikiQuery } from '@Technical-13/mw-node-js';
+import { WikiSession } from '@Technical-13/mw-node-js';
 
-/* 1. Load your configuration */
 const config = JSON.parse( fs.readFileSync( './wikiconfig.json', 'utf8' ) );
+config.key = process.env.WIKI_ENCRYPTION_KEY;
+config.seed = process.env.WIKI_ENCRYPTION_SEED;
 
-/* 2. Initialize Session */
 const session = new WikiSession( config );
 
-/* 3. Decrypt your password using the static helper and your .env key */
-const password = WikiSession.decryptPassword( 
-  config.encryptedPassword, 
-  config.iv, 
-  process.env.WIKI_ENCRYPTION_KEY 
-);
-
-/* 4. Modern Login (Recommended for MW 1.43+) */
-await session.clientLogin( password );
-
-/* --- Legacy Fallback --- */
-/* If your wiki does not support clientlogin, use the legacy method: */
-/* await session.login( password ); */
-
-/* 5. Example Query */
-const query = new WikiQuery( session );
-const data = await query.prop.get( { titles: 'Special:Statistics' } );
+/* Perform a page write to the bot's userspace */
+await session.edit.write( { 
+  title: 'User:' + config.username + '/Sandbox', 
+  text: config.userAgent + ' (Node ' + process.version + ') testing ~~~~', 
+  summary: 'mw-node-js bot testing for ' + config.username + '.' 
+} );
 ```
 
 ## Available Modules
 
-- **WikiSession (Auth)**: Handles the connection, authentication, and rate limiting.
-  - `clientLogin( password )`: Performs a modern OAuth2-style login (Recommended for MW 1.43+).
-  - `login( password )`: **(Legacy)** Performs a standard MediaWiki login. Use only if `clientLogin` is unavailable.
-  - `logout()`: Ends the current session and clears cookies.
-  - `decryptPassword( data, iv, key )`: (Static) Helper to decrypt credentials for the config.
+### **Note on `params`**:
+- Every method that accepts a `params` object is designed to pass those key-value pairs directly to your wiki's API.
+  - For a full list of supported parameters for any action, visit your wiki's `api.php?action=help`.
 
-- **WikiAccount**: Identity and user management.
-  - `email( params )`: Sends an email to a wiki user.
-  - `get( params )`: Retrieves metadata for specific wiki users.
-  - `rights( params )`: Changes user group memberships.
-  - `verify( username, token )`: Validates a token on a user's `Discord.json` subpage.
+- **`WikiSession` (The Hub)**
+  - `_get( params )`: Internal wrapper for GET requests.
+  - `_post( params )`: Internal wrapper for POST requests.
+  - `decryptPassword( data, seed, key )`: (Static) Helper for secure credential handling.
 
-- **WikiEdit**: Content modification.
-  - `post( params )`: Submits an edit. Automatically fetches CSRF tokens.
+- **`WikiAccount`**
+  - `email( params )`: Sends internal wiki emails to other users.
+  - `get( params )`: Retrieves a list of user metadata and account information.
+  - `verify( user, pageid, revid, reason )`: Performs an automated user verification workflow, including rights assignment and content suppression.
 
-- **WikiLogger**: Infrastructure utility.
-  - `error`, `warn`, `debug`, `info`, `log`: Methods to log at specific priority levels.
+- **`WikiAuth`**
+  - `changeauthenticationdata( params )`: Updates existing AuthManager credentials (like passwords).
+  - `clientlogin( params )`: The modern MediaWiki 1.43+ login flow.
+  - `login( params )`: **(Legacy)** Standard MediaWiki login. Use only if `clientlogin` is unavailable.
+  - `logout()`: Ends the current session and clears internal cookies.
+  - `removeauthenticationdata( params )`: Detaches specific authentication methods from the account.
+  - `resetpassword( params )`: Triggers or completes the password reset process.
 
-- **WikiMaintenance**: Admin and moderation suite.
-  - `block( params )`: Prevents a user from performing wiki actions.
-  - `delete( params )`: Removes a page from the wiki.
-  - `move( params )`: Renames pages and talk pages.
-  - `patrol( params )`: Marks revisions as patrolled.
-  - `protect( params )`: Modifies page protection levels.
-  - `revisionDelete( params )`: Masks revisions or logs.
-  - `rollback( params )`: Reverts the last edits on a page.
-  - `suppress( pageid, revid, reason )`: Wrapper for `revisionDelete` to hide specific content.
-  - `undelete( params )`: Restores deleted pages or revisions.
+- **`WikiEdit`**
+  - `changecontentmodel( params )`: Changes how a page's content is interpreted (e.g., Wikitext to JSON).
+  - `mergehistory( params )`: Combines the revision histories of two different pages.
+  - `spamblacklist( params )`: Validates URLs against the wiki's spam filter.
+  - `titleblacklist( params )`: Validates page titles against the title blacklist filter.
+  - `upload( params )`: Handles asset and file uploads to the wiki.
+  - `write( params )`: The primary tool for creating and modifying pages (aligns with `api.php?action=edit`).
 
-- **WikiMedia**: File asset management.
-  - `upload( params )`: Uploads files to the wiki.
+- **`WikiMaintenance`**
+  - `compare( params )`: Generates a comparison (diff) between two revisions or pages.
+  - `delete( params )`: Permanently removes a page from the wiki.
+  - `managetags( params )`: Utility to create, delete, or modify change tags.
+  - `move( params )`: Renames pages and their associated talk pages.
+  - `patrol( params )`: Marks specific revisions as patrolled.
+  - `protect( params )`: Modifies the protection level of a page.
+  - `purge( params )`: Manually clears the server-side cache for specific pages.
+  - `revisiondelete( params )`: Masks specific revisions or log entries from public view.
+  - `rollback( params )`: Rapidly reverts the last set of edits by a user on a page.
+  - `suppress( pageid, revid, reason )`: Privacy-focused wrapper for `revisiondelete`.
+  - `tag( params )`: Adds or removes change tags from specific revisions.
+  - `undelete( params )`: Restores previously deleted pages or specific revisions.
 
-- **WikiParser**: Processes wikitext.
-  - `parse( params )`: Converts wikitext to HTML or extracts metadata.
+- **`WikiModeration`**
+  - `block( params )`: Blocks a user from performing edits or other actions.
+  - `unblock( params )`: Removes an existing block from a user.
+  - `userrights( params )`: Manages user group memberships and permissions.
 
-- **WikiQuery**: Data retrieval suite.
-  - `execute( params, limit )`: Raw API queries with auto-continuation.
-  - **.prop**
-    - `get( params )`: Fetches properties of specific pages.
-  - **.list**
-    - `get( params )`: Retrieves lists of data.
-  - **.meta**
-    - `get( params )`: Fetches site or user metadata.
-  - **.generator**
-    - `get( params )`: Pipes list results into properties for bulk retrieval.
+- **`WikiParser`**
+  - `expandtemplates( params )`: Resolves templates, variables, and parser functions without rendering full HTML.
+  - `parse( params )`: Converts raw wikitext into HTML or extracts page metadata.
 
-- **WikiWatchlist**: Personal watchlist management.
-  - `watch( params )`: Adds pages to the watchlist.
-  - `unwatch( params )`: Removes pages from the watchlist.
+- **`WikiQuery`**
+  - `execute( params, limit )`: "Smart" query with automatic continuation.
+  - Sub-modules: 
+    - `generator( type, params )`: Pipes list results into properties. Accepts array for `type`.
+    - `list( type, params )`: Retrieves sequences of data. Accepts array for `type`.
+    - `meta( type, params )`: Fetches site/user metadata. Accepts array for `type`.
+    - `prop( type, params )`: Fetches page properties. Accepts array for `type`.
 
 ## Contributing
-Contributions are welcome! Use the templates in the [Issues](https://github.com/Technical-13/mw-node-js/issues) tab.
+Contributions are welcome!
+- To submit a bug report/feature request, use the [Issues](/../../issues) templates; or,
+- See our [Contributing Guidelines](CONTRIBUTING.md) for details on our coding standards and how to submit a Pull Request.
 
 ## Support & Funding
 If this library has helped your bot project, consider supporting its development:
