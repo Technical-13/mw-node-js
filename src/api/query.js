@@ -1,7 +1,7 @@
-import { WikiGenerator } from './query/generator.js';
-import { WikiList } from './query/list.js';
-import { WikiMeta } from './query/meta.js';
-import { WikiProp } from './query/prop.js';
+import { WikiGenerator } from './query/wikigenerator.js';
+import { WikiList } from './query/wikilist.js';
+import { WikiMeta } from './query/wikimeta.js';
+import { WikiProp } from './query/wikiprop.js';
 
 /**
  * WikiQuery handles all data retrieval and search actions from the MediaWiki API.
