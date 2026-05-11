@@ -15,7 +15,8 @@ export class WikiEdit {
       const res = await this.session._post( { action: 'changecontentmodel', ...params } );
       if ( res.changecontentmodel ) this.session.logger.info( '[Wiki] Content model changed for: ' + res.changecontentmodel.title );
       return res.changecontentmodel;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Content model change failure: ' + e.message );
       return null;
     }
@@ -34,7 +35,8 @@ export class WikiEdit {
         this.session.logger.info( '[Wiki] Page edited: ' + res.edit.title );
       }
       return res.edit;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Edit failure: ' + e.message );
       return null;
     }
@@ -53,7 +55,8 @@ export class WikiEdit {
         this.session.logger.info( '[Wiki] History merged: ' + res.mergehistory.from + ' -> ' + res.mergehistory.to );
       }
       return res.mergehistory;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] History merge failure: ' + e.message );
       return null;
     }
@@ -68,7 +71,8 @@ export class WikiEdit {
     try {
       const res = await this.session._post( { action: 'spamblacklist', ...params } );
       return res.spamblacklist;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Spam blacklist check failure: ' + e.message );
       return null;
     }
@@ -83,7 +87,8 @@ export class WikiEdit {
     try {
       const res = await this.session._post( { action: 'titleblacklist', ...params } );
       return res.titleblacklist;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Title blacklist check failure: ' + e.message );
       return null;
     }
@@ -102,7 +107,8 @@ export class WikiEdit {
         this.session.logger.info( '[Wiki] File uploaded: ' + res.upload.filename );
       }
       return res.upload;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Upload failure: ' + e.message );
       return null;
     }
