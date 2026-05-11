@@ -23,26 +23,27 @@ export class WikiQuery {
    */
   async execute( params, limit = 10 ) {
     try {
-      const fullResults = { };
+      const fullResults = {};
       let currentParams = { action: 'query', continue: '', ...params };
       let totalFetched = 0;
-      let continueParams = { };
+      let continueParams = {};
       while ( true ) {
         const res = await this.session._post( { ...currentParams, ...continueParams } );
         if ( res.query ) {
           for ( const [ key, value ] of Object.entries( res.query ) ) {
-            if ( !fullResults[key] ) fullResults[key] = value;
-            else if ( Array.isArray( value ) ) fullResults[key] = fullResults[key].concat( value );
-            else if ( typeof value === 'object' ) Object.assign( fullResults[key], value );
+            if ( !fullResults[ key ] ) fullResults[ key ] = value;
+            else if ( Array.isArray( value ) ) fullResults[key] = fullResults[ key ].concat( value );
+            else if ( typeof value === 'object' ) Object.assign( fullResults[ key ], value );
           }
-          const primaryKey = Object.keys( res.query )[0];
-          totalFetched += Array.isArray( res.query[primaryKey] ) ? res.query[primaryKey].length : 1;
+          const primaryKey = Object.keys( res.query )[ 0 ];
+          totalFetched += Array.isArray( res.query[ primaryKey ] ) ? res.query[ primaryKey ].length : 1;
         }
         if ( !res.continue || ( limit !== 'max' && totalFetched >= limit ) ) break;
         continueParams = res.continue;
       }
       return fullResults;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Continued query failed: ' + e.message );
       return null;
     }
@@ -57,7 +58,8 @@ export class WikiQuery {
     try {
       const res = await this.session._get( { action: 'query', ...params } );
       return res.query;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Query failure: ' + e.message );
       return null;
     }
@@ -72,7 +74,8 @@ export class WikiQuery {
     try {
       const res = await this.session._post( { action: 'query', ...params } );
       return res.query;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] POST query failure: ' + e.message );
       return null;
     }
