@@ -1,8 +1,7 @@
 /**
- * Prop Class
- * Handles 'prop' actions to get data attached to specific pages.
+ * WikiProp handles "prop" actions to retrieve data attached to specific pages.
  */
-export class Prop {
+export class WikiProp {
   constructor( session ) { this.session = session; }
 
   /**
@@ -25,7 +24,7 @@ export class Prop {
       return page;
     }
     catch ( e ) {
-      console.error( '[Wiki] Prop failure: ' + e.message );
+      this.session.logger.error( '[Wiki] Prop failure: ' + e.message );
       return null;
     }
   }
