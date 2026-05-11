@@ -1,7 +1,7 @@
 /**
  * WikiMaintenance handles administrative page health and system-level actions.
  */
-class WikiMaintenance {
+export class WikiMaintenance {
   constructor( session ) { this.session = session; }
 
   /**
@@ -105,6 +105,23 @@ class WikiMaintenance {
   }
 
   /**
+   * Marks a revision or page as patrolled.
+   * @param {Object} params - Parameters for the patrol action.
+   * @returns {Promise} Result of the patrol action.
+   */
+  async patrol( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'patrol' );
+      const res = await this.session._post( { action: 'patrol', ...params } );
+      if ( res.patrol ) this.session.logger.info( '[Wiki] Patrolled revision: ' + res.patrol.rcid );
+      return res.patrol;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Patrol failure: ' + e.message );
+      return null;
+    }
+  }
+
+  /**
    * Protects or unprotects a page.
    * @param {Object} params - Parameters for the protect action.
    * @returns {Promise} Result of the protect action.
@@ -138,6 +155,23 @@ class WikiMaintenance {
   }
 
   /**
+   * Deletes or undeletes specific revisions of a page.
+   * @param {Object} params - Parameters for the revisiondelete action.
+   * @returns {Promise} Result of the action.
+   */
+  async revisiondelete( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'revisiondelete', ...params } );
+      if ( res.revisiondelete ) this.session.logger.info( '[Wiki] Revision visibility updated' );
+      return res.revisiondelete;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Revision delete failure: ' + e.message );
+      return null;
+    }
+  }
+
+  /**
    * Reverts the last edits of a user to a page.
    * @param {Object} params - Parameters for the rollback action.
    * @returns {Promise} Result of the rollback action.
@@ -152,6 +186,17 @@ class WikiMaintenance {
       this.session.logger.error( '[Wiki] Rollback failure: ' + e.message );
       return null;
     }
+  }
+
+  /**
+   * Wrapper for revisiondelete to assist with verification privacy.
+   * @param {string} pageid - The ID of the page.
+   * @param {string} revid - The ID of the revision.
+   * @param {string} reason - The reason for suppression.
+   * @returns {Promise} Result of the action.
+   */
+  async suppress( pageid, revid, reason ) {
+    return await this.revisiondelete( { target: pageid, ids: revid, type: 'revision', hide: 'content|comment|user', reason: reason } );
   }
 
   /**
@@ -188,5 +233,3 @@ class WikiMaintenance {
     }
   }
 }
-
-module.exports = WikiMaintenance;
