@@ -1,15 +1,13 @@
 /**
- * Generator Class
- * Handles 'generator' actions to pipe lists into properties.
+ * WikiGenerator handles "generator" actions to pipe lists of pages into properties.
  */
-export class Generator {
+export class WikiGenerator {
   constructor( session ) { this.session = session; }
 
   /**
    * Executes a generator query using generic parameters.
-   * 
-   * @param { Object } params - Parameters for generator query.
-   * @returns { Promise<Array|null> }
+   * @param {Object} params - Parameters for the generator query.
+   * @returns {Promise} The resulting page data or null.
    */
   async get( params ) {
     try {
@@ -24,7 +22,7 @@ export class Generator {
       return res.query.pages;
     }
     catch ( e ) {
-      console.error( '[Wiki] Generator failure: ' + e.message );
+      this.session.logger.error( '[Wiki] Generator failure: ' + e.message );
       return null;
     }
   }
