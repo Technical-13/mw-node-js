@@ -1,15 +1,13 @@
 /**
- * Meta Class
- * Handles 'meta' actions for site-wide or user-specific data.
+ * WikiMeta handles "meta" queries for site-wide or user-specific information.
  */
-export class Meta {
+export class WikiMeta {
   constructor( session ) { this.session = session; }
 
   /**
    * Executes a meta query using generic parameters.
-   * 
-   * @param { Object } params - Parameters for meta query.
-   * @returns { Promise<Object|null> }
+   * @param {Object} params - Parameters for the meta query.
+   * @returns {Promise} The resulting meta data or null.
    */
   async get( params ) {
     try {
@@ -20,7 +18,7 @@ export class Meta {
       return res.query;
     }
     catch ( e ) {
-      console.error( '[Wiki] Meta failure: ' + e.message );
+      this.session.logger.error( '[Wiki] Meta failure: ' + e.message );
       return null;
     }
   }
