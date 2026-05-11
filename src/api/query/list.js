@@ -1,8 +1,7 @@
 /**
- * List Class
- * Handles 'list' actions for retrieving groups of pages or data.
+ * WikiList handles "list" queries to retrieve sequences of data from the wiki.
  */
-export class List {
+export class WikiList {
   constructor( session ) { this.session = session; }
 
   /**
