@@ -13,11 +13,11 @@ class WikiModeration {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'block', ...params } );
-      if ( res.block ) this.session.logger.info( '[Wiki] User blocked: ' + res.block.user );
+      if ( res.block ) this.session.logger.info( 'WikiSession.moderation.block( ... ) success: ' + res.block.user );
       return res.block;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Block failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.moderation.block( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -31,11 +31,11 @@ class WikiModeration {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'unblock', ...params } );
-      if ( res.unblock ) this.session.logger.info( '[Wiki] User unblocked: ' + res.unblock.user );
+      if ( res.unblock ) this.session.logger.info( 'WikiSession.moderation.unblock( ... ) success: ' + res.unblock.user );
       return res.unblock;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Unblock failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.moderation.unblock( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -49,11 +49,11 @@ class WikiModeration {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'userrights' );
       const res = await this.session._post( { action: 'userrights', ...params } );
-      if ( res.userrights ) this.session.logger.info( '[Wiki] Rights updated for: ' + res.userrights.user );
+      if ( res.userrights ) this.session.logger.info( 'WikiSession.moderation.userrights( ... ) updated for: ' + res.userrights.user );
       return res.userrights;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] User rights failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.moderation.userrights( ... ) failure: ' + e.message );
       return null;
     }
   }
