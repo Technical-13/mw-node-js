@@ -15,7 +15,8 @@ export class WikiAuth {
       const res = await this.session._post( { action: 'changeauthenticationdata', ...params } );
       if ( res.changeauthenticationdata ) this.session.logger.info( '[Wiki] Authentication data changed' );
       return res.changeauthenticationdata;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Change auth data failure: ' + e.message );
       return null;
     }
@@ -34,7 +35,8 @@ export class WikiAuth {
         this.session.logger.info( '[Wiki] ClientLogin successful for: ' + res.clientlogin.username );
       }
       return res.clientlogin;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] ClientLogin failure: ' + e.message );
       return null;
     }
@@ -53,7 +55,8 @@ export class WikiAuth {
         this.session.logger.info( '[Wiki] Legacy login successful for: ' + res.login.lgusername );
       }
       return res.login;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Legacy login failure: ' + e.message );
       return null;
     }
@@ -68,7 +71,8 @@ export class WikiAuth {
       const res = await this.session._post( { action: 'logout' } );
       this.session.logger.info( '[Wiki] Logged out successfully' );
       return res;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Logout failure: ' + e.message );
       return null;
     }
@@ -85,7 +89,8 @@ export class WikiAuth {
       const res = await this.session._post( { action: 'removeauthenticationdata', ...params } );
       if ( res.removeauthenticationdata ) this.session.logger.info( '[Wiki] Authentication data removed' );
       return res.removeauthenticationdata;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Remove auth data failure: ' + e.message );
       return null;
     }
@@ -102,7 +107,8 @@ export class WikiAuth {
       const res = await this.session._post( { action: 'resetpassword', ...params } );
       if ( res.resetpassword ) this.session.logger.info( '[Wiki] Password reset action triggered' );
       return res.resetpassword;
-    } catch ( e ) {
+    }
+    catch ( e ) {
       this.session.logger.error( '[Wiki] Reset password failure: ' + e.message );
       return null;
     }
