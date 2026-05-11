@@ -53,18 +53,41 @@ export class WikiLogger {
       }
       return max + 1;
     }
-    catch ( e ) {
-      return 1;
-    }
+    catch ( e ) { return 1; }
   }
 
   /**
-   * Internal write method to handle file and console output.
+   * Internal write method to handle console and file output.
    * @param {string} level - Log level.
    * @param {string} message - Message to log.
    * @param {number} priority - Priority level for verbosity checks.
    */
   _write( level, message, priority ) {
+    this._writeConsole( level, message, priority );
+    this._writeFile( level, message, priority );
+  }
+
+  /**
+   * Internal write method to handle console output.
+   * @param {string} level - Log level.
+   * @param {string} message - Message to log.
+   * @param {number} priority - Priority level for verbosity checks.
+   */
+  _writeConsole( level, message, priority ) {
+    if ( priority <= this.consoleVerbosity && this.consoleVerbosity > 0 ) {
+      if ( level === 'ERROR' ) console.error( message );
+      else if ( level === 'WARN' ) console.warn( message );
+      else console.log( message );
+    }
+  }  
+
+  /**
+   * Internal write method to handle file output.
+   * @param {string} level - Log level.
+   * @param {string} message - Message to log.
+   * @param {number} priority - Priority level for verbosity checks.
+   */
+  _writeFile( level, message, priority ) {
     const now = new Date();
     const YYYY = now.getFullYear();
     const MM = String( now.getMonth() + 1 ).padStart( 2, '0' );
@@ -78,17 +101,13 @@ export class WikiLogger {
     const logFile = path.join( this.logDir, fileName + '.' + this.format );
     const entry = this._formatEntry( timestamp, level, message );
     if ( priority <= this.fileVerbosity && this.fileVerbosity > 0 ) {
-      try {
-        fs.appendFileSync( logFile, entry, 'utf8' );
-      }
+      try { fs.appendFileSync( logFile, entry, 'utf8' ); }
       catch ( e ) {
-        console.error( '[Logger] Failed to write to log: ' + e.message );
+        if ( priority <= this.consoleVerbosity && this.consoleVerbosity > 0 ) {
+          const logLevel = level.toLowerCase();
+          this._writeConsole( 'WikiSession.logger.' + logLevel + '( ... ) failed to write to log file: ' + e.message );
+        }
       }
-    }
-    if ( priority <= this.consoleVerbosity && this.consoleVerbosity > 0 ) {
-      if ( level === 'ERROR' ) console.error( message );
-      else if ( level === 'WARN' ) console.warn( message );
-      else console.log( message );
     }
   }
 
