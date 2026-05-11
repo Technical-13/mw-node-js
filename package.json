@@ -1,28 +1,30 @@
 {
   "name": "@Technical-13/mw-node-js",
   "version": "1.0.1",
-  "lastUpdated": "2026-05-10T14:50:00Z",
+  "lastUpdated": "2026-05-11T08:52:48Z",
   "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth, rate limiting, and markdown logging.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./auth": "./src/api/auth.js",
-    "./query": "./src/api/query.js",
-    "./edit": "./src/api/edit.js",
-    "./account": "./src/api/account.js",
-    "./maintenance": "./src/api/maintenance.js",
-    "./media": "./src/api/media.js",
-    "./parser": "./src/api/parser.js",
-    "./watchlist": "./src/api/watchlist.js",
-    "./logger": "./src/util/logger.js"
+    "./account": "./src/api/wikiaccount.js",
+    "./auth": "./src/api/wikiauth.js",
+    "./edit": "./src/api/wikiedit.js",
+    "./logger": "./src/util/wikilogger.js",
+    "./maintenance": "./src/api/wikimaintenance.js",
+    "./moderation": "./src/api/wikimoderation.js",
+    "./parser": "./src/api/wikiparser.js",
+    "./query": "./src/api/wikiquery.js",
+    "./session": "./src/wikisession.js",
+    "./tokens": "./src/api/wikitokens.js",
+    "./watchlist": "./src/api/wikiwatchlist.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com"
   },
   "publishConfig": {
-    "registry": "https://github.com"
+    "registry": "https://npm.pkg.github.com"
   },
   "engines": {
     "node": ">=22.0.0"
