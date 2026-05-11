@@ -152,7 +152,7 @@ await session.edit.write( {
 
 ## Contributing
 Contributions are welcome!
-- To submit a bug report/feature request, use the [Issues](/../../issues) templates; or,
+- To submit a bug report/feature request, use the [Issues](../../issues) templates; or,
 - See our [Contributing Guidelines](CONTRIBUTING.md) for details on our coding standards and how to submit a Pull Request.
 
 ## Support & Funding
