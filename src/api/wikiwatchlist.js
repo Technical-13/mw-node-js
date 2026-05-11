@@ -21,13 +21,14 @@ export class WikiWatchlist {
       if ( !params.token ) params.token = await this.session.tokens.get( 'watch' );
       const res = await this.session._post( { action: 'watch', ...params } );
       if ( res.watch ) {
-        const status = res.watch.unwatch ? 'removed from' : 'added to';
-        this.session.logger.info( '[Wiki] Page ' + status + ' watchlist: ' + res.watch.title );
+        const toggle = res.watch.unwatch ? 'unwatch' : 'watch';
+        this.session.logger.info( 'WikiSession.watchlist.' + toggle + '( ... ) sucessful: ' + res.watch.title );
       }
       return res.watch;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Watchlist update failure: ' + e.message );
+      const toggle = params.unwatch ? 'unwatch' : 'watch';
+      this.session.logger.error( 'WikiSession.watchlist.' + toggle + '( ... ) failure: ' + e.message );
       return null;
     }
   }
