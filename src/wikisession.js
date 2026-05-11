@@ -1,9 +1,13 @@
 import crypto from 'node:crypto';
-import { WikiAccount } from './api/account.js';
-import { WikiAuth } from './api/auth.js';
-import { WikiMaintenance } from './api/maintenance.js';
-import { WikiModeration } from './api/moderation.js';
-import { WikiTokens } from './util/WikiTokens.js';
+import { WikiAccount } from './api/wikiaccount.js';
+import { WikiAuth } from './api/wikiauth.js';
+import { WikiEdit } from './api/wikiedit.js';
+import { WikiMaintenance } from './api/wikimaintenance.js';
+import { WikiModeration } from './api/wikimoderation.js';
+import { WikiParser } from './api/wikiparser.js';
+import { WikiQuery } from './api/wikiquery.js';
+import { WikiTokens } from './api/wikitokens.js';
+import { WikiWatchlist } from './api/wikiwatchlist.js';
 
 /**
  * WikiSession manages the core connection, security, and state for the MediaWiki API.
@@ -18,19 +22,23 @@ export class WikiSession {
     this.logger = config.logger;
     this.minDelay = config.minDelay || 1000;
     this.userAgent = config.userAgent;
-    this.tokens = new WikiTokens( this );
     this.account = new WikiAccount( this );
     this.auth = new WikiAuth( this );
+    this.edit = new WikiEdit( this );
     this.maintenance = new WikiMaintenance( this );
     this.moderation = new WikiModeration( this );
-    this._startKeepAlive( );
+    this.parser = new WikiParser( this );
+    this.query = new WikiQuery( this );
+    this.tokens = new WikiTokens( this );
+    this.watchlist = new WikiWatchlist( this );
+    this._startKeepAlive();
   }
 
   /**
    * Fetches metadata for the bot account.
    * @returns {Promise} The bot metadata.
    */
-  async _getBotMetadata( ) {
+  async _getBotMetadata() {
     try {
       const res = await this._get( { action: 'query', meta: 'userinfo', uiprop: 'groups|rights' } );
       if ( res.query && res.query.userinfo ) {
@@ -51,19 +59,19 @@ export class WikiSession {
    */
   async _get( params ) {
     try {
-      const now = Date.now( );
+      const now = Date.now();
       const timeSinceLast = now - this.lastRequestTime;
       if ( timeSinceLast < this.minDelay ) await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) );
-      this.lastRequestTime = Date.now( );
+      this.lastRequestTime = Date.now();
       const url = new URL( this.apiUrl );
       const searchParams = new URLSearchParams( { ...params, format: 'json', formatversion: '2' } );
-      url.search = searchParams.toString( );
+      url.search = searchParams.toString();
       const res = await fetch( url, {
         method: 'GET',
         headers: { 'Cookie': this.cookieJar, 'User-Agent': this.userAgent }
       } );
       this._updateCookies( res.headers.get( 'set-cookie' ) );
-      return await res.json( );
+      return await res.json();
     }
     catch ( e ) {
       this.logger.error( '[Wiki] GET Error: ' + e.message );
@@ -75,7 +83,7 @@ export class WikiSession {
    * Orchestrates the login process using encrypted credentials.
    * @returns {Promise} Result of the login attempt.
    */
-  async _performLogin( ) {
+  async _performLogin() {
     try {
       const pass = WikiSession.decryptPassword( this.config.pass, this.config.iv, this.config.key );
       const res = await this.auth.login( { username: this.config.user, password: pass } );
@@ -97,10 +105,10 @@ export class WikiSession {
    */
   async _post( params ) {
     try {
-      const now = Date.now( );
+      const now = Date.now();
       const timeSinceLast = now - this.lastRequestTime;
       if ( timeSinceLast < this.minDelay ) await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) );
-      this.lastRequestTime = Date.now( );
+      this.lastRequestTime = Date.now();
       const body = new URLSearchParams( { ...params, format: 'json', formatversion: '2' } );
       const res = await fetch( this.apiUrl, {
         method: 'POST',
@@ -112,7 +120,7 @@ export class WikiSession {
         }
       } );
       this._updateCookies( res.headers.get( 'set-cookie' ) );
-      return await res.json( );
+      return await res.json();
     }
     catch ( e ) {
       this.logger.error( '[Wiki] POST Error: ' + e.message );
@@ -123,12 +131,12 @@ export class WikiSession {
   /**
    * Starts the 15-minute keep-alive loop to prevent session timeout.
    */
-  _startKeepAlive( ) {
+  _startKeepAlive() {
     if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
-    this.keepAliveInterval = setInterval( async ( ) => {
+    this.keepAliveInterval = setInterval( async () => {
       try {
         const res = await this._post( { action: 'query', meta: 'userinfo' } );
-        if ( res && res.query.userinfo.id === 0 ) await this._performLogin( );
+        if ( res && res.query.userinfo.id === 0 ) await this._performLogin();
       }
       catch ( err ) {
         this.logger.error( '[Wiki] Keep-alive failed: ' + err.message );
