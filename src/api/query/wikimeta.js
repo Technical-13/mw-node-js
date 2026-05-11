@@ -15,7 +15,7 @@ export async function WikiMeta( session, type, params ) {
     return res.query;
   }
   catch ( e ) {
-    session.logger.error( '[Wiki] Meta failure: ' + e.message );
+    session.logger.error( 'WikiSession.query.meta( ' + type + ', ... ) failure: ' + e.message );
     return null;
   }
 }
