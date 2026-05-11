@@ -1,8 +1,12 @@
 {
   "name": "@Technical-13/mw-node-js",
   "version": "1.0.1",
-  "lastUpdated": "2026-05-11T08:52:48Z",
+  "lastUpdated": "2026-05-11T12:44:48Z",
   "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth, rate limiting, and markdown logging.",
+  "scripts": {
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix"
+  },
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -33,5 +37,11 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^2.1.0",
+    "eslint": "^9.2.0",
+    "eslint-plugin-jsdoc": "^48.2.3",
+    "eslint-plugin-perfectionist": "^2.10.0"
   }
 }
