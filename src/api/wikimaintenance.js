@@ -15,7 +15,7 @@ export class WikiMaintenance {
       return res.compare;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.compare( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.compare( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -29,11 +29,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'delete', ...params } );
-      if ( res.delete ) this.session.logger.info( 'WikiSession.delete( ... ) success: ' + res.delete.title );
+      if ( res.delete ) this.session.logger.info( 'WikiSession.maintenance.delete( ... ) success: ' + res.delete.title );
       return res.delete;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.delete( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.delete( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -47,11 +47,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'managetags', ...params } );
-      if ( res.managetags ) this.session.logger.info( 'WikiSession.managetags( ... ) successful' );
+      if ( res.managetags ) this.session.logger.info( 'WikiSession.maintenance.managetags( ... ) successful' );
       return res.managetags;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.managetags( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.managetags( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -65,11 +65,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'move', ...params } );
-      if ( res.move ) this.session.logger.info( 'WikiSession.move( ... ) success: ' + res.move.from + ' -> ' + res.move.to );
+      if ( res.move ) this.session.logger.info( 'WikiSession.maintenance.move( ... ) success: ' + res.move.from + ' -> ' + res.move.to );
       return res.move;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.move( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.move( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -83,11 +83,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'patrol' );
       const res = await this.session._post( { action: 'patrol', ...params } );
-      if ( res.patrol ) this.session.logger.info( 'WikiSession.patrol( ... ) revision: ' + res.patrol.rcid );
+      if ( res.patrol ) this.session.logger.info( 'WikiSession.maintenance.patrol( ... ) revision: ' + res.patrol.rcid );
       return res.patrol;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.patrol( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.patrol( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -101,11 +101,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'protect', ...params } );
-      if ( res.protect ) this.session.logger.info( 'WikiSession.protect( ... ) success: ' + res.protect.title );
+      if ( res.protect ) this.session.logger.info( 'WikiSession.maintenance.protect( ... ) success: ' + res.protect.title );
       return res.protect;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.protect( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.protect( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -118,11 +118,11 @@ export class WikiMaintenance {
   async purge( params ) {
     try {
       const res = await this.session._post( { action: 'purge', ...params } );
-      if ( res.purge ) this.session.logger.info( 'WikiSession.purge( ... ) successful' );
+      if ( res.purge ) this.session.logger.info( 'WikiSession.maintenance.purge( ... ) successful' );
       return res.purge;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.purge( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.purge( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -136,11 +136,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'revisiondelete', ...params } );
-      if ( res.revisiondelete ) this.session.logger.info( 'WikiSession.revisiondelete( ... ) updated' );
+      if ( res.revisiondelete ) this.session.logger.info( 'WikiSession.maintenance.revisiondelete( ... ) updated' );
       return res.revisiondelete;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.revisiondelete( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.revisiondelete( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -154,11 +154,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'rollback' );
       const res = await this.session._post( { action: 'rollback', ...params } );
-      if ( res.rollback ) this.session.logger.info( 'WikiSession.rollback( ... ) successful on: ' + res.rollback.title );
+      if ( res.rollback ) this.session.logger.info( 'WikiSession.maintenance.rollback( ... ) successful on: ' + res.rollback.title );
       return res.rollback;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.rollback( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.rollback( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -183,11 +183,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'tag', ...params } );
-      if ( res.tag ) this.session.logger.info( 'WikiSession.tag( ... ) updated successfully' );
+      if ( res.tag ) this.session.logger.info( 'WikiSession.maintenance.tag( ... ) updated successfully' );
       return res.tag;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.tag( ... ) update failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.tag( ... ) update failure: ' + e.message );
       return null;
     }
   }
@@ -201,11 +201,11 @@ export class WikiMaintenance {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'undelete', ...params } );
-      if ( res.undelete ) this.session.logger.info( 'WikiSession.undelete( ... ) page restored: ' + res.undelete.title );
+      if ( res.undelete ) this.session.logger.info( 'WikiSession.maintenance.undelete( ... ) page restored: ' + res.undelete.title );
       return res.undelete;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.undelete( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.maintenance.undelete( ... ) failure: ' + e.message );
       return null;
     }
   }
