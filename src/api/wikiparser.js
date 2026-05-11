@@ -15,7 +15,7 @@ export class WikiParser {
       return res.expandtemplates;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Template expansion failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.parser.expandtemplates( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -31,7 +31,7 @@ export class WikiParser {
       return res.parse;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Parse failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.parser.parse( ... ) failure: ' + e.message );
       return null;
     }
   }
