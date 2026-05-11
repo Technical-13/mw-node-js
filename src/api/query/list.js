@@ -19,7 +19,7 @@ export class WikiList {
       return res.query;
     }
     catch ( e ) {
-      console.error( '[Wiki] List failure: ' + e.message );
+      this.session.logger.error( '[Wiki] List failure: ' + e.message );
       return null;
     }
   }
