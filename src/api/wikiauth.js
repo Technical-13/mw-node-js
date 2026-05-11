@@ -17,7 +17,7 @@ export class WikiAuth {
       return res.changeauthenticationdata;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Change auth data failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.changeauthenticationdata( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -32,12 +32,12 @@ export class WikiAuth {
       if ( !params.logintoken ) params.logintoken = await this.session.tokens.get( 'login' );
       const res = await this.session._post( { action: 'clientlogin', ...params } );
       if ( res.clientlogin && res.clientlogin.status === 'PASS' ) {
-        this.session.logger.info( '[Wiki] ClientLogin successful for: ' + res.clientlogin.username );
+        this.session.logger.info( 'WikiSession.clientlogin( ... ) successful for: ' + res.clientlogin.username );
       }
       return res.clientlogin;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] ClientLogin failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.clientlogin( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -52,12 +52,12 @@ export class WikiAuth {
       if ( !params.lgtoken ) params.lgtoken = await this.session.tokens.get( 'login' );
       const res = await this.session._post( { action: 'login', ...params } );
       if ( res.login && res.login.result === 'Success' ) {
-        this.session.logger.info( '[Wiki] Legacy login successful for: ' + res.login.lgusername );
+        this.session.logger.info( 'WikiSession.login( ... ) successful for: ' + res.login.lgusername );
       }
       return res.login;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Legacy login failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.login( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -69,11 +69,11 @@ export class WikiAuth {
   async logout() {
     try {
       const res = await this.session._post( { action: 'logout' } );
-      this.session.logger.info( '[Wiki] Logged out successfully' );
+      this.session.logger.info( 'WikiSession.logout( ... ) successful' );
       return res;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Logout failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.logout( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -87,11 +87,11 @@ export class WikiAuth {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'removeauthenticationdata', ...params } );
-      if ( res.removeauthenticationdata ) this.session.logger.info( '[Wiki] Authentication data removed' );
+      if ( res.removeauthenticationdata ) this.session.logger.info( 'WikiSession.removeauthenticationdata( ... ) removed' );
       return res.removeauthenticationdata;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Remove auth data failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.removeauthenticationdata( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -105,11 +105,11 @@ export class WikiAuth {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'resetpassword', ...params } );
-      if ( res.resetpassword ) this.session.logger.info( '[Wiki] Password reset action triggered' );
+      if ( res.resetpassword ) this.session.logger.info( 'WikiSession.resetpassword( ... ) action triggered' );
       return res.resetpassword;
     }
     catch ( e ) {
-      this.session.logger.error( '[Wiki] Reset password failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.resetpassword( ... ) failure: ' + e.message );
       return null;
     }
   }
