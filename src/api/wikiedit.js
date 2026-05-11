@@ -13,11 +13,11 @@ export class WikiEdit {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'changecontentmodel', ...params } );
-      if ( res.changecontentmodel ) this.session.logger.info( 'WikiSession.changecontentmodel( ... ) success for: ' + res.changecontentmodel.title );
+      if ( res.changecontentmodel ) this.session.logger.info( 'WikiSession.edit.changecontentmodel( ... ) success for: ' + res.changecontentmodel.title );
       return res.changecontentmodel;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.changecontentmodel( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.edit.changecontentmodel( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -32,12 +32,12 @@ export class WikiEdit {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'mergehistory', ...params } );
       if ( res.mergehistory ) {
-        this.session.logger.info( 'WikiSession.mergehistory( ... ) success: ' + res.mergehistory.from + ' -> ' + res.mergehistory.to );
+        this.session.logger.info( 'WikiSession.edit.mergehistory( ... ) success: ' + res.mergehistory.from + ' -> ' + res.mergehistory.to );
       }
       return res.mergehistory;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.mergehistory( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.edit.mergehistory( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -53,7 +53,7 @@ export class WikiEdit {
       return res.spamblacklist;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.spamblacklist( ... ) check failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.edit.spamblacklist( ... ) check failure: ' + e.message );
       return null;
     }
   }
@@ -69,7 +69,7 @@ export class WikiEdit {
       return res.titleblacklist;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.titleblacklist( ... ) check failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.edit.titleblacklist( ... ) check failure: ' + e.message );
       return null;
     }
   }
@@ -84,12 +84,12 @@ export class WikiEdit {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'upload', ...params } );
       if ( res.upload && res.upload.result === 'Success' ) {
-        this.session.logger.info( 'WikiSession.upload( ... ) successful: ' + res.upload.filename );
+        this.session.logger.info( 'WikiSession.edit.upload( ... ) successful: ' + res.upload.filename );
       }
       return res.upload;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.upload( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.edit.upload( ... ) failure: ' + e.message );
       return null;
     }
   }
@@ -105,12 +105,12 @@ export class WikiEdit {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'edit', ...params } );
       if ( res.edit && res.edit.result === 'Success' ) {
-        this.session.logger.info( 'WikiSession.write( ... ) success: ' + res.edit.title );
+        this.session.logger.info( 'WikiSession.edit.write( ... ) success: ' + res.edit.title );
       }
       return res.edit;
     }
     catch ( e ) {
-      this.session.logger.error( 'WikiSession.write( ... ) failure: ' + e.message );
+      this.session.logger.error( 'WikiSession.edit.write( ... ) failure: ' + e.message );
       return null;
     }
   }
