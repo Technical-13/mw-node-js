@@ -1,119 +1,192 @@
 /**
- * WikiMaintenance Class
- * Handles administrative and moderation actions.
+ * WikiMaintenance handles administrative page health and system-level actions.
  */
-export class WikiMaintenance {
+class WikiMaintenance {
   constructor( session ) { this.session = session; }
 
-  async block( params ) {
+  /**
+   * Changes the content model of a page.
+   * @param {Object} params - Parameters for the changecontentmodel action.
+   * @returns {Promise} Result of the action.
+   */
+  async changecontentmodel( params ) {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
-      const res = await this.session._post( { action: 'block', ...params } );
-      if ( res.block ) this.session.logger.info( '[Wiki] User blocked: ' + res.block.user );
-      return res.block;
-    }
-    catch ( e ) {
-      this.session.logger.error( '[Wiki] Block failure: ' + e.message );
+      const res = await this.session._post( { action: 'changecontentmodel', ...params } );
+      if ( res.changecontentmodel ) this.session.logger.info( '[Wiki] Content model changed for: ' + res.changecontentmodel.title );
+      return res.changecontentmodel;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Content model change failure: ' + e.message );
       return null;
     }
   }
 
+  /**
+   * Compares two pages or revisions.
+   * @param {Object} params - Parameters for the compare action.
+   * @returns {Promise} Result of the comparison.
+   */
+  async compare( params ) {
+    try {
+      const res = await this.session._get( { action: 'compare', ...params } );
+      return res.compare;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Compare failure: ' + e.message );
+      return null;
+    }
+  }
+
+  /**
+   * Deletes a page from the wiki.
+   * @param {Object} params - Parameters for the delete action.
+   * @returns {Promise} Result of the delete action.
+   */
   async delete( params ) {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'delete', ...params } );
       if ( res.delete ) this.session.logger.info( '[Wiki] Page deleted: ' + res.delete.title );
       return res.delete;
-    }
-    catch ( e ) {
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Delete failure: ' + e.message );
       return null;
     }
   }
 
+  /**
+   * Manages change tags (create/delete/activate/deactivate).
+   * @param {Object} params - Parameters for the managetags action.
+   * @returns {Promise} Result of the action.
+   */
+  async managetags( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'managetags', ...params } );
+      if ( res.managetags ) this.session.logger.info( '[Wiki] Tag management successful' );
+      return res.managetags;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Tag management failure: ' + e.message );
+      return null;
+    }
+  }
+
+  /**
+   * Merges the history of one page into another.
+   * @param {Object} params - Parameters for the mergehistory action.
+   * @returns {Promise} Result of the action.
+   */
+  async mergehistory( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'mergehistory', ...params } );
+      if ( res.mergehistory ) this.session.logger.info( '[Wiki] History merged: ' + res.mergehistory.from + ' -> ' + res.mergehistory.to );
+      return res.mergehistory;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] History merge failure: ' + e.message );
+      return null;
+    }
+  }
+
+  /**
+   * Moves a page to a new title.
+   * @param {Object} params - Parameters for the move action.
+   * @returns {Promise} Result of the move action.
+   */
   async move( params ) {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'move', ...params } );
       if ( res.move ) this.session.logger.info( '[Wiki] Page moved: ' + res.move.from + ' -> ' + res.move.to );
       return res.move;
-    }
-    catch ( e ) {
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Move failure: ' + e.message );
       return null;
     }
   }
 
-  async patrol( params ) {
-    try {
-      if ( !params.token ) params.token = await this.session.tokens.get( 'patrol' );
-      const res = await this.session._post( { action: 'patrol', ...params } );
-      return res.patrol;
-    }
-    catch ( e ) {
-      this.session.logger.error( '[Wiki] Patrol failure: ' + e.message );
-      return null;
-    }
-  }
-
+  /**
+   * Protects or unprotects a page.
+   * @param {Object} params - Parameters for the protect action.
+   * @returns {Promise} Result of the protect action.
+   */
   async protect( params ) {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'protect', ...params } );
-      if ( res.protect ) this.session.logger.info( '[Wiki] Protection updated for: ' + res.protect.title );
+      if ( res.protect ) this.session.logger.info( '[Wiki] Page protected: ' + res.protect.title );
       return res.protect;
-    }
-    catch ( e ) {
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Protect failure: ' + e.message );
       return null;
     }
   }
 
-  async revisionDelete( params ) {
+  /**
+   * Purges the server cache for pages.
+   * @param {Object} params - Parameters for the purge action.
+   * @returns {Promise} Result of the purge action.
+   */
+  async purge( params ) {
     try {
-      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
-      const baseParams = { action: 'revisiondelete', ...params };
-      let res = await this.session._post( { ...baseParams, suppress: 'yes' } );
-      if ( res.revisiondelete && res.revisiondelete.status === 'success' ) return res.revisiondelete;
-      this.session.logger.warn( 'Bot lacks suppressrevision permission. Falling back to deleterevision.' );
-      res = await this.session._post( baseParams );
-      if ( res.revisiondelete && res.revisiondelete.status === 'success' ) return res.revisiondelete;
-      this.session.logger.error( 'Bot lacks necessary permissions (suppressrevision/deleterevision).' );
-      return null;
-    }
-    catch ( e ) {
-      this.session.logger.error( '[Wiki] RevisionDelete failure: ' + e.message );
+      const res = await this.session._post( { action: 'purge', ...params } );
+      if ( res.purge ) this.session.logger.info( '[Wiki] Purge successful' );
+      return res.purge;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Purge failure: ' + e.message );
       return null;
     }
   }
 
+  /**
+   * Reverts the last edits of a user to a page.
+   * @param {Object} params - Parameters for the rollback action.
+   * @returns {Promise} Result of the rollback action.
+   */
   async rollback( params ) {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'rollback' );
       const res = await this.session._post( { action: 'rollback', ...params } );
       if ( res.rollback ) this.session.logger.info( '[Wiki] Rollback successful on: ' + res.rollback.title );
       return res.rollback;
-    }
-    catch ( e ) {
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Rollback failure: ' + e.message );
       return null;
     }
   }
 
-  async suppress( pageid, revid, reason ) {
-    return await this.revisionDelete( { target: pageid, ids: revid, type: 'revision', hide: 'content|comment|user', reason: reason } );
+  /**
+   * Adds or removes change tags from revisions or log entries.
+   * @param {Object} params - Parameters for the tag action.
+   * @returns {Promise} Result of the tag action.
+   */
+  async tag( params ) {
+    try {
+      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
+      const res = await this.session._post( { action: 'tag', ...params } );
+      if ( res.tag ) this.session.logger.info( '[Wiki] Tags updated successfully' );
+      return res.tag;
+    } catch ( e ) {
+      this.session.logger.error( '[Wiki] Tag update failure: ' + e.message );
+      return null;
+    }
   }
 
+  /**
+   * Restores a deleted page or specific revisions.
+   * @param {Object} params - Parameters for the undelete action.
+   * @returns {Promise} Result of the undelete action.
+   */
   async undelete( params ) {
     try {
       if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
       const res = await this.session._post( { action: 'undelete', ...params } );
       if ( res.undelete ) this.session.logger.info( '[Wiki] Page restored: ' + res.undelete.title );
       return res.undelete;
-    }
-    catch ( e ) {
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Undelete failure: ' + e.message );
       return null;
     }
   }
 }
+
+module.exports = WikiMaintenance;
