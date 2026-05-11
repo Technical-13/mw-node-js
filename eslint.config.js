@@ -29,7 +29,8 @@ export default [
       'jsdoc/require-jsdoc': [ 'error', { require: { ClassDeclaration: true, MethodDefinition: true } } ],
       'jsdoc/require-description': 'error',
       'jsdoc/require-param': 'error',
-      'jsdoc/require-returns': 'error'
+      'jsdoc/require-returns': 'error',
+      'jsdoc/require-example': 'warn'
     }
   }
 ];
