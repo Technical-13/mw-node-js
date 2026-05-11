@@ -1,0 +1,30 @@
+# .github/dependabot.yml
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      # Options: "daily" (every day), "weekly" (once a week), "monthly" (once a month)
+      interval: "monthly"
+    # Keeping the limit low since groups bundle many updates together
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      linting-and-style:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Options: "daily", "weekly", "monthly"
+      interval: "monthly"
+    open-pull-requests-limit: 3
