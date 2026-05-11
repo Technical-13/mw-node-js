@@ -1,13 +1,17 @@
 /**
- * WikiTokens Class
- * A centralized utility for fetching and validating MediaWiki API tokens.
+ * WikiTokens handles the retrieval and validation of security tokens for write actions.
  */
 export class WikiTokens {
   constructor( session ) { this.session = session; }
 
+  /**
+   * Retrieves specific tokens from the MediaWiki API.
+   * @param {string} type - The type of token to fetch (e.g., 'csrf', 'login').
+   * @returns {Promise} The requested token string or null.
+   */
   async get( type = 'csrf' ) {
     try {
-      const normalizedType = type.toLowerCase( );
+      const normalizedType = type.toLowerCase();
       const validTypes = [ 'createaccount', 'csrf', 'login', 'patrol', 'rollback', 'userrights', 'watch' ];
       if ( !validTypes.includes( normalizedType ) ) {
         this.session.logger.error( '[Wiki] Invalid token type requested: ' + type );
@@ -15,27 +19,32 @@ export class WikiTokens {
       }
       const res = await this.session._post( { action: 'query', meta: 'tokens', type: normalizedType } );
       const tokenKey = normalizedType + 'token';
-      if ( !res.query.tokens[ tokenKey ] ) {
+      if ( !res.query.tokens[tokenKey] ) {
         this.session.logger.error( '[Wiki] API did not return a ' + type + ' token. Check user permissions.' );
         return null;
       }
-      return res.query.tokens[ tokenKey ];
-    }
-    catch ( e ) {
+      return res.query.tokens[tokenKey];
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Failed to fetch ' + type + ' token: ' + e.message );
       return null;
     }
   }
 
+  /**
+   * Validates a token against the MediaWiki API.
+   * @param {string} type - The type of token to validate.
+   * @param {string} token - The token string to check.
+   * @param {number} maxtokenage - Optional maximum age of the token in seconds.
+   * @returns {Promise} True if the token is valid.
+   */
   async validate( type, token, maxtokenage ) {
     try {
-      const normalizedType = type.toLowerCase( );
+      const normalizedType = type.toLowerCase();
       const params = { action: 'checktoken', type: normalizedType, token: token };
       if ( maxtokenage ) params.maxtokenage = maxtokenage;
       const res = await this.session._post( params );
       return res.checktoken.result === 'valid';
-    }
-    catch ( e ) {
+    } catch ( e ) {
       this.session.logger.error( '[Wiki] Token validation failed: ' + e.message );
       return false;
     }
