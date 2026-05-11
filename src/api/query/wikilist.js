@@ -1,26 +1,21 @@
 /**
- * WikiList handles "list" queries to retrieve sequences of data from the wiki.
+ * Executes a list query to retrieve sequences of data.
+ * @param {Object} session - The active WikiSession.
+ * @param {string} type - The list type (e.g., 'categorymembers').
+ * @param {Object} params - Additional parameters for the query.
+ * @returns {Promise} The resulting list data or null.
  */
-export class WikiList {
-  constructor( session ) { this.session = session; }
-
-  /**
-   * Executes a list query using generic parameters.
-   * 
-   * @param { Object } params - Parameters for list query.
-   * @returns { Promise<Object|null> }
-   */
-  async get( params ) {
-    try {
-      const res = await this.session._post( {
-        action: 'query',
-        ...params
-      } );
-      return res.query;
-    }
-    catch ( e ) {
-      this.session.logger.error( '[Wiki] List failure: ' + e.message );
-      return null;
-    }
+export async function WikiList( session, type, params ) {
+  try {
+    const res = await session._post( {
+      action: 'query',
+      list: type,
+      ...params
+    } );
+    return res.query;
+  }
+  catch ( e ) {
+    session.logger.error( '[Wiki] List failure: ' + e.message );
+    return null;
   }
 }
