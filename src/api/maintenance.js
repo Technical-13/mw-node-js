@@ -5,23 +5,6 @@ export class WikiMaintenance {
   constructor( session ) { this.session = session; }
 
   /**
-   * Changes the content model of a page.
-   * @param {Object} params - Parameters for the changecontentmodel action.
-   * @returns {Promise} Result of the action.
-   */
-  async changecontentmodel( params ) {
-    try {
-      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
-      const res = await this.session._post( { action: 'changecontentmodel', ...params } );
-      if ( res.changecontentmodel ) this.session.logger.info( '[Wiki] Content model changed for: ' + res.changecontentmodel.title );
-      return res.changecontentmodel;
-    } catch ( e ) {
-      this.session.logger.error( '[Wiki] Content model change failure: ' + e.message );
-      return null;
-    }
-  }
-
-  /**
    * Compares two pages or revisions.
    * @param {Object} params - Parameters for the compare action.
    * @returns {Promise} Result of the comparison.
@@ -66,23 +49,6 @@ export class WikiMaintenance {
       return res.managetags;
     } catch ( e ) {
       this.session.logger.error( '[Wiki] Tag management failure: ' + e.message );
-      return null;
-    }
-  }
-
-  /**
-   * Merges the history of one page into another.
-   * @param {Object} params - Parameters for the mergehistory action.
-   * @returns {Promise} Result of the action.
-   */
-  async mergehistory( params ) {
-    try {
-      if ( !params.token ) params.token = await this.session.tokens.get( 'csrf' );
-      const res = await this.session._post( { action: 'mergehistory', ...params } );
-      if ( res.mergehistory ) this.session.logger.info( '[Wiki] History merged: ' + res.mergehistory.from + ' -> ' + res.mergehistory.to );
-      return res.mergehistory;
-    } catch ( e ) {
-      this.session.logger.error( '[Wiki] History merge failure: ' + e.message );
       return null;
     }
   }
