@@ -3,7 +3,7 @@ A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limi
 
 ## Package Metadata
 - **Current Version**: 1.0.1
-- **Last Updated**: 2026-05-11T20:25:13Z
+- **Last Updated**: <!--last_updated-->2026-05-11T20:25:13Z<!--last_updated-->
 - **Tracking**: Check `package.json` for the `lastUpdated` key.
 
 ## Features

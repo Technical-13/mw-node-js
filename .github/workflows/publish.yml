@@ -3,16 +3,29 @@ name: Publish to GitHub Packages
 on:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Number (Leave blank to auto-increment)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry Run (skip actual publishing)'
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js v22
         uses: actions/setup-node@v4
@@ -23,11 +36,48 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
-        
+
       - name: Run Linter
         run: npm run lint
 
+      - name: Sync Metadata (package.json & README)
+        run: |
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')          
+          if [ -z "${{ github.event.inputs.version }}" ]; then
+            NEW_VERSION=$(npm version minor --no-git-tag-version)
+          else
+            NEW_VERSION=v${{ github.event.inputs.version }}
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          fi          
+          node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); pkg.lastUpdated='$TIMESTAMP'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          sed -i "s|<!--last_updated-->.*<!--last_updated-->|<!--last_updated-->$TIMESTAMP<!--last_updated-->|g" README.md          
+          echo "FINAL_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Update Changelog
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.FINAL_VERSION }}
+
+      - name: Dry Run Publish
+        if: github.event.inputs.dry_run == 'true'
+        run: npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish Package
+        if: github.event.inputs.dry_run == 'false'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit, Tag, and Push Changes
+        if: github.event.inputs.dry_run == 'false'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+          git add package.json README.md CHANGELOG.md
+          git commit -m "chore: release ${{ env.FINAL_VERSION }}"
+          git tag ${{ env.FINAL_VERSION }}
+          git push origin main --tags
