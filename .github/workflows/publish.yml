@@ -9,6 +9,10 @@ on:
         description: 'Version Number (Leave blank to auto-increment)'
         required: false
         type: string
+      release_notes:
+        description: 'Brief description for the release commit'
+        required: false
+        type: string
       dry_run:
         description: 'Dry Run (skip actual publishing)'
         required: true
@@ -21,11 +25,17 @@ jobs:
     permissions:
       contents: write
       packages: write
+      security-events: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Check for Dependabot Security Alerts
+        uses: xalun/check-dependabot-alerts-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js v22
         uses: actions/setup-node@v4
@@ -50,8 +60,11 @@ jobs:
             npm version ${{ github.event.inputs.version }} --no-git-tag-version
           fi          
           node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json')); pkg.lastUpdated='$TIMESTAMP'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
-          sed -i "s|<!--last_updated-->.*<!--last_updated-->|<!--last_updated-->$TIMESTAMP<!--last_updated-->|g" README.md          
+          sed -i "s|<!--last_updated-->.*<!--last_updated-->|<!--last_updated-->$TIMESTAMP<!--last_updated-->|g" README.md   
+          MSG="${{ github.event.inputs.release_notes }}"
+          if [ -z "$MSG" ]; then MSG="release $NEW_VERSION"; fi          
           echo "FINAL_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "COMMIT_MSG=$MSG" >> $GITHUB_ENV
 
       - name: Update Changelog
         id: changelog
@@ -78,6 +91,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
           git add package.json README.md CHANGELOG.md
-          git commit -m "chore: release ${{ env.FINAL_VERSION }}"
+          git commit -m "chore: ${{ env.COMMIT_MSG }}"
           git tag ${{ env.FINAL_VERSION }}
           git push origin main --tags
