@@ -3,7 +3,7 @@ A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limi
 
 ## Package Metadata
 - **Current Version**: 1.0.1
-- **Last Updated**: 2026-05-11T10:00:00Z
+- **Last Updated**: 2026-05-11T20:25:13Z
 - **Tracking**: Check `package.json` for the `lastUpdated` key.
 
 ## Features
@@ -14,7 +14,6 @@ A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limi
 - **Modular Design**: Separated concerns for Authentication, Maintenance, Moderation, and specialized Queries.
 
 ## Configuration
-
 Setting up your bot requires two files: a private environment file and a public configuration file.
 
 ### Step 1: Create a `.env` file
@@ -26,7 +25,6 @@ WIKI_ENCRYPTION_SEED=your_32_character_hex_seed_here
 
 ### Step 2: Create a `wikiconfig.json` file
 Create a file named `wikiconfig.json` to store your non-sensitive bot settings.
-
 **Note on encryptedPassword**: You must encrypt your wiki password before putting it here.
 1. Navigate to the `/tools` folder in this repository.
 2. Open your terminal (**PowerShell**, **Command Prompt** (*cmd.exe*), or **Bash**) and run the encryptor using your **Key** and **Seed** from Step 1:
@@ -65,7 +63,7 @@ Create a file named `wikiconfig.json` to store your non-sensitive bot settings.
   - `1`: Warn/Error. Only logs system failures or warnings. Recommended for stable production bots.
   - `2`: Debug. Includes warning, errors, and granular debugging messages to trace logic.
   - `3`: Firehose. Logs everything including informational messages and raw API interactions.
-
+  
 ### Step 3: Initialization
 When you start your bot, you must "inject" the private keys from your `.env` into the configuration.
 ```javascript
@@ -88,21 +86,15 @@ await session.edit.write( {
 ```
 
 ## Available Modules
-
 ### **Note on `params`**:
 - Every method that accepts a `params` object is designed to pass those key-value pairs directly to your wiki's API.
   - For a full list of supported parameters for any action, visit your wiki's `api.php?action=help`.
-
 - **`WikiSession` (The Hub)**
-  - `_get( params )`: Internal wrapper for GET requests.
-  - `_post( params )`: Internal wrapper for POST requests.
   - `decryptPassword( data, seed, key )`: (Static) Helper for secure credential handling.
-
 - **`WikiAccount`**
   - `email( params )`: Sends internal wiki emails to other users.
-  - `get( params )`: Retrieves a list of user metadata and account information.
+  - `getUsers( params )`: Retrieves a list of user metadata and account information.
   - `verify( user, pageid, revid, reason )`: Performs an automated user verification workflow, including rights assignment and content suppression.
-
 - **`WikiAuth`**
   - `changeauthenticationdata( params )`: Updates existing AuthManager credentials (like passwords).
   - `clientlogin( params )`: The modern MediaWiki 1.43+ login flow.
@@ -110,7 +102,6 @@ await session.edit.write( {
   - `logout()`: Ends the current session and clears internal cookies.
   - `removeauthenticationdata( params )`: Detaches specific authentication methods from the account.
   - `resetpassword( params )`: Triggers or completes the password reset process.
-
 - **`WikiEdit`**
   - `changecontentmodel( params )`: Changes how a page's content is interpreted (e.g., Wikitext to JSON).
   - `mergehistory( params )`: Combines the revision histories of two different pages.
@@ -118,7 +109,6 @@ await session.edit.write( {
   - `titleblacklist( params )`: Validates page titles against the title blacklist filter.
   - `upload( params )`: Handles asset and file uploads to the wiki.
   - `write( params )`: The primary tool for creating and modifying pages (aligns with `api.php?action=edit`).
-
 - **`WikiMaintenance`**
   - `compare( params )`: Generates a comparison (diff) between two revisions or pages.
   - `delete( params )`: Permanently removes a page from the wiki.
@@ -132,16 +122,13 @@ await session.edit.write( {
   - `suppress( pageid, revid, reason )`: Privacy-focused wrapper for `revisiondelete`.
   - `tag( params )`: Adds or removes change tags from specific revisions.
   - `undelete( params )`: Restores previously deleted pages or specific revisions.
-
 - **`WikiModeration`**
   - `block( params )`: Blocks a user from performing edits or other actions.
   - `unblock( params )`: Removes an existing block from a user.
   - `userrights( params )`: Manages user group memberships and permissions.
-
 - **`WikiParser`**
   - `expandtemplates( params )`: Resolves templates, variables, and parser functions without rendering full HTML.
   - `parse( params )`: Converts raw wikitext into HTML or extracts page metadata.
-
 - **`WikiQuery`**
   - `execute( params, limit )`: "Smart" query with automatic continuation.
   - Sub-modules: 
@@ -149,7 +136,13 @@ await session.edit.write( {
     - `list( type, params )`: Retrieves sequences of data. Accepts array for `type`.
     - `meta( type, params )`: Fetches site/user metadata. Accepts array for `type`.
     - `prop( type, params )`: Fetches page properties. Accepts array for `type`.
-
+- **`WikiTokens`**
+  - `get( type )`: Retrieves a security token (defaults to `csrf`).
+  - `validate( type, token, maxtokenage )`: Verifies if a token is still valid.
+- **`WikiWatchlist`**
+  - `unwatch( params )`: Removes pages from the watchlist.
+  - `watch( params )`: Adds pages to the watchlist.
+  
 ## Contributing
 Contributions are welcome!
 - To submit a bug report/feature request, use the [Issues](../../issues/new/choose) templates; or,

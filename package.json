@@ -1,7 +1,7 @@
 {
   "name": "@Technical-13/mw-node-js",
   "version": "1.0.1",
-  "lastUpdated": "2026-05-11T12:44:48Z",
+  "lastUpdated": "2026-05-11T20:25:13Z",
   "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth, rate limiting, and markdown logging.",
   "scripts": {
     "lint": "eslint src/**/*.js",
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com"
+    "url": "git+https://github.com/Technical-13/mw-node-js.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"

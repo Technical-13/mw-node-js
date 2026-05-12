@@ -101,7 +101,7 @@ export class WikiSession {
    */
   async _performLogin() {
     try {
-      const pass = WikiSession.decryptPassword( this.config.pass, this.config.iv, this.config.key );
+      const pass = WikiSession.decryptPassword( this.config.encryptedPassword, this.config.seed, this.config.key );
       const res = await this.auth.login( { username: this.config.user, password: pass } );
       if ( res && res.status === 'PASS' ) {
         this.logger.info( 'WikiSession._performLogin( ... ) auto-login successful' );
@@ -151,7 +151,7 @@ export class WikiSession {
     if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
     this.keepAliveInterval = setInterval( async () => {
       try {
-        if ( !this.config.pass || !this.config.key ) return;
+        if ( !this.config.encryptedPassword || !this.config.seed ) return;
         const res = await this._post( { action: 'query', meta: 'userinfo' } );
         if ( res && res.query.userinfo.id === 0 ) await this._performLogin();
       }
@@ -174,15 +174,15 @@ export class WikiSession {
   /**
    * Decrypts an AES-256-CBC encrypted password.
    * @param {string} encryptedData - The hex string to decrypt.
-   * @param {string} ivHex - The hex initialization vector.
+   * @param {string} seedHex - The hex initialization vector.
    * @param {string} keyHex - The hex encryption key.
    * @returns {string} The decrypted password.
    * @example
-   * const pass = WikiSession.decryptPassword( 'hex_data', 'hex_iv', 'hex_key' );
+   * const pass = WikiSession.decryptPassword( 'hex_encrypted_data', 'hex_seed', 'hex_key' );
    */
-  static decryptPassword( encryptedData, ivHex, keyHex ) {
+  static decryptPassword( encryptedData, seedHex, keyHex ) {
     const key = Buffer.from( keyHex, 'hex' );
-    const iv = Buffer.from( ivHex, 'hex' );
+    const iv = Buffer.from( seedHex, 'hex' );
     const decipher = crypto.createDecipheriv( 'aes-256-cbc', key, iv );
     let decrypted = decipher.update( encryptedData, 'hex', 'utf8' );
     decrypted += decipher.final( 'utf8' );
