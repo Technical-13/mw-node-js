@@ -1,9 +1,11 @@
 /**
  * Executes a generator query to pipe results into properties.
- * @param {Object} session - The active WikiSession.
- * @param {string} type - The generator type (e.g., 'categorymembers').
- * @param {Object} params - Additional parameters for the query.
- * @returns {Promise} The resulting page data or null.
+ * @param { Object } session - The active WikiSession.
+ * @param { string } type - The generator type (e.g., 'categorymembers').
+ * @param { Object } params - Additional parameters for the query.
+ * @returns { Promise<Object[]|null> } The resulting page data or null.
+ * @example
+ * const pages = await WikiGenerator( session, 'allpages', { gaplimit: 5 } );
  */
 export async function WikiGenerator( session, type, params ) {
   try {
@@ -13,13 +15,10 @@ export async function WikiGenerator( session, type, params ) {
       prop: 'revisions',
       rvprop: 'content',
       rvslots: 'main',
-      gcmlimit: 10,
       ...params
     } );
-    return res.query.pages;
+    return res && res.query ? res.query.pages : null;
   }
-  catch ( e ) {
-    session.logger.error( 'WikiSession.query.generator( ' + type + ', ... ) failure: ' + e.message );
-    return null;
-  }
+  catch ( e ) { session.logger.error( 'WikiSession.query.generator( ' + type + ', ... ) failure: ' + e.message ); }
+  return null;
 }

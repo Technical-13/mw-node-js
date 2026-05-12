@@ -2,34 +2,44 @@
  * WikiWatchlist handles actions related to the user's personal watchlist.
  */
 export class WikiWatchlist {
+  /**
+   * Initializes the WikiWatchlist module.
+   * @param { WikiSession } session - The active wiki session.
+   * @example
+   * const watchlist = new WikiWatchlist( session );
+   */
   constructor( session ) { this.session = session; }
 
   /**
    * Removes pages from the current user's watchlist.
-   * @param {Object} params - Parameters for the watch action.
-   * @returns {Promise} Result of the watch action.
+   * @param { Object } params - Parameters for the watch action.
+   * @returns { Promise<Object|null> } Result of the watch action.
+   * @example
+   * await session.watchlist.unwatch( { title: 'Main Page' } );
    */
   async unwatch( params ) { return await this.watch( { ...params, unwatch: true } ); }
 
   /**
    * Adds or removes pages from the current user's watchlist.
-   * @param {Object} params - Parameters for the watch action.
-   * @returns {Promise} Result of the watch action.
+   * @param { Object } params - Parameters for the watch action.
+   * @returns { Promise<Object|null> } Result of the watch action.
+   * @example
+   * await session.watchlist.watch( { title: 'Sandbox' } );
    */
   async watch( params ) {
     try {
-      if ( !params.token ) params.token = await this.session.tokens.get( 'watch' );
+      if ( !params.token ) { params.token = await this.session.tokens.get( 'watch' ); }
       const res = await this.session._post( { action: 'watch', ...params } );
-      if ( res.watch ) {
+      if ( res?.watch ) {
         const toggle = res.watch.unwatch ? 'unwatch' : 'watch';
-        this.session.logger.info( 'WikiSession.watchlist.' + toggle + '( ... ) sucessful: ' + res.watch.title );
+        this.session.logger.info( 'WikiSession.watchlist.' + toggle + '( ... ) successful: ' + res.watch.title );
       }
-      return res.watch;
+      return res?.watch || null;
     }
     catch ( e ) {
       const toggle = params.unwatch ? 'unwatch' : 'watch';
       this.session.logger.error( 'WikiSession.watchlist.' + toggle + '( ... ) failure: ' + e.message );
-      return null;
     }
+    return null;
   }
 }
