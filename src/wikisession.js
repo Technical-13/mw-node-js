@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer';
 import { WikiAccount } from './api/wikiaccount.js';
 import { WikiAuth } from './api/wikiauth.js';
 import { WikiEdit } from './api/wikiedit.js';
+import { WikiFeeds } from './api/wikifeeds.js';
 import { WikiMaintenance } from './api/wikimaintenance.js';
 import { WikiModeration } from './api/wikimoderation.js';
 import { WikiParser } from './api/wikiparser.js';
@@ -16,7 +17,7 @@ import { WikiWatchlist } from './api/wikiwatchlist.js';
 export class WikiSession {
   /**
    * Initializes the WikiSession module.
-   * @param {Object} config - Connection details including api, user, and encryption keys.
+   * @param { Object } config - Connection details including api, user, and encryption keys.
    * @example
    * const session = new WikiSession( {
    *   apiUrl: 'https://wikipedia.org',
@@ -37,6 +38,7 @@ export class WikiSession {
     this.account = new WikiAccount( this );
     this.auth = new WikiAuth( this );
     this.edit = new WikiEdit( this );
+    this.feeds = new WikiFeeds( this );
     this.maintenance = new WikiMaintenance( this );
     this.moderation = new WikiModeration( this );
     this.parser = new WikiParser( this );
@@ -47,9 +49,9 @@ export class WikiSession {
   }
 
   /**
-   * Internal GET request wrapper with rate limiting and cookie handling.
-   * @param {Object} params - The API parameters.
-   * @returns {Promise} The API response data.
+   * Internal GET request wrapper with rate limiting, cookie handling, and content-type detection.
+   * @param { Object } params - The API parameters.
+   * @returns { Promise<Object|string|null> } Parsed JSON object, raw text for feeds, or null on failure.
    * @example
    * const data = await session._get( { action: 'query', meta: 'siteinfo' } );
    */
@@ -57,34 +59,39 @@ export class WikiSession {
     try {
       const now = Date.now();
       const timeSinceLast = now - this.lastRequestTime;
-      if ( timeSinceLast < this.minDelay ) await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) );
+      if ( timeSinceLast < this.minDelay ) { await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) ); }
       this.lastRequestTime = Date.now();
       const url = new URL( this.apiUrl );
-      const searchParams = new URLSearchParams( { ...params, format: 'json', formatversion: '2' } );
+      const isFeed = params.action.startsWith( 'feed' );
+      const searchParams = new URLSearchParams( {
+        ...params,
+        format: isFeed ? ( params.format || 'json' ) : 'json',
+        formatversion: '2'
+      } );
       url.search = searchParams.toString();
       const res = await fetch( url, {
         method: 'GET',
         headers: { 'Cookie': this.cookieJar, 'User-Agent': this.userAgent }
       } );
-      this._updateCookies( res.headers.get( 'set-cookie' ) );
-      return await res.json();
+      this._updateCookies( res.headers );
+      const contentType = res.headers.get( 'content-type' );
+      if ( contentType && contentType.includes( 'application/json' ) ) { return await res.json(); }
+      return await res.text();
     }
-    catch ( e ) {
-      this.logger.error( 'WikiSession._get( ... ) failure: ' + e.message );
-      return null;
-    }
+    catch ( e ) { this.logger.error( 'WikiSession._get( ... ) failure: ' + e.message ); }
+    return null;
   }
 
   /**
    * Fetches metadata for the bot account.
-   * @returns {Promise} The bot metadata.
+   * @returns { Promise<Object|null> } The bot metadata.
    * @example
    * const metadata = await session._getBotMetadata();
    */
   async _getBotMetadata() {
     try {
       const res = await this._get( { action: 'query', meta: 'userinfo', uiprop: 'groups|rights' } );
-      if ( res.query && res.query.userinfo ) {
+      if ( res?.query?.userinfo ) {
         this.logger.info( 'WikiSession._getBotMetadata( ... ) loaded for: ' + res.query.userinfo.name );
         return res.query.userinfo;
       }
@@ -95,15 +102,15 @@ export class WikiSession {
 
   /**
    * Orchestrates the login process using encrypted credentials.
-   * @returns {Promise} Result of the login attempt.
+   * @returns { Promise<boolean> } Result of the login attempt.
    * @example
    * const success = await session._performLogin();
    */
   async _performLogin() {
     try {
       const pass = WikiSession.decryptPassword( this.config.encryptedPassword, this.config.seed, this.config.key );
-      const res = await this.auth.login( { username: this.config.user, password: pass } );
-      if ( res && res.status === 'PASS' ) {
+      const res = await this.auth.clientlogin( { username: this.config.username, password: pass } );
+      if ( res?.status === 'PASS' ) {
         this.logger.info( 'WikiSession._performLogin( ... ) auto-login successful' );
         return true;
       }
@@ -114,8 +121,8 @@ export class WikiSession {
 
   /**
    * Internal POST request wrapper with rate limiting and cookie handling.
-   * @param {Object} params - The API parameters.
-   * @returns {Promise} The API response data.
+   * @param { Object } params - The API parameters.
+   * @returns { Promise<Object|null> } The API response data.
    * @example
    * const res = await session._post( { action: 'edit', title: 'Test', text: 'Hello' } );
    */
@@ -123,7 +130,7 @@ export class WikiSession {
     try {
       const now = Date.now();
       const timeSinceLast = now - this.lastRequestTime;
-      if ( timeSinceLast < this.minDelay ) await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) );
+      if ( timeSinceLast < this.minDelay ) { await new Promise( ( resolve ) => setTimeout( resolve, this.minDelay - timeSinceLast ) ); }
       this.lastRequestTime = Date.now();
       const body = new URLSearchParams( { ...params, format: 'json', formatversion: '2' } );
       const res = await fetch( this.apiUrl, {
@@ -135,7 +142,7 @@ export class WikiSession {
           'User-Agent': this.userAgent
         }
       } );
-      this._updateCookies( res.headers.get( 'set-cookie' ) );
+      this._updateCookies( res.headers );
       return await res.json();
     }
     catch ( e ) { this.logger.error( 'WikiSession._post( ... ) error: ' + e.message ); }
@@ -148,12 +155,12 @@ export class WikiSession {
    * session._startKeepAlive();
    */
   _startKeepAlive() {
-    if ( this.keepAliveInterval ) clearInterval( this.keepAliveInterval );
+    if ( this.keepAliveInterval ) { clearInterval( this.keepAliveInterval ); }
     this.keepAliveInterval = setInterval( async () => {
       try {
-        if ( !this.config.encryptedPassword || !this.config.seed ) return;
+        if ( !this.config.encryptedPassword || !this.config.key ) { return; }
         const res = await this._post( { action: 'query', meta: 'userinfo' } );
-        if ( res && res.query.userinfo.id === 0 ) await this._performLogin();
+        if ( res?.query?.userinfo?.id === 0 ) { await this._performLogin(); }
       }
       catch ( err ) { this.logger.error( 'WikiSession._startKeepAlive() failure: ' + err.message ); }
     }, 15 * 60 * 1000 );
@@ -161,24 +168,23 @@ export class WikiSession {
 
   /**
    * Updates the internal cookie jar from response headers.
-   * @param {string} headers - The set-cookie header string.
+   * @param { Object } headers - The fetch Headers object.
    * @example
    * session._updateCookies( response.headers );
    */
   _updateCookies( headers ) {
-    // Use getSetCookie() to get an array of strings instead of one comma-split string
     const cookies = headers.getSetCookie();
     if ( cookies.length > 0 ) { this.cookieJar = cookies.map( ( c ) => c.split( ';' )[ 0 ] ).join( '; ' ); }
   }
 
   /**
    * Decrypts an AES-256-CBC encrypted password.
-   * @param {string} encryptedData - The hex string to decrypt.
-   * @param {string} seedHex - The hex initialization vector.
-   * @param {string} keyHex - The hex encryption key.
-   * @returns {string} The decrypted password.
+   * @param { string } encryptedData - The hex string to decrypt.
+   * @param { string } seedHex - The hex initialization vector.
+   * @param { string } keyHex - The hex encryption key.
+   * @returns { string } The decrypted password.
    * @example
-   * const pass = WikiSession.decryptPassword( 'hex_encrypted_data', 'hex_seed', 'hex_key' );
+   * const pass = WikiSession.decryptPassword( 'hex_data', 'hex_seed', 'hex_key' );
    */
   static decryptPassword( encryptedData, seedHex, keyHex ) {
     const key = Buffer.from( keyHex, 'hex' );

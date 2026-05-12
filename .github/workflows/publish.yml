@@ -18,11 +18,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://github.com'
+          registry-url: 'https://npm.pkg.github.com'
           scope: '@Technical-13'
 
       - name: Install Dependencies
         run: npm install
+        
+      - name: Run Linter
+        run: npm run lint
 
       - name: Publish Package
         run: npm publish

@@ -21,8 +21,8 @@ export class WikiAuth {
     try {
       if ( !params.token ) { params.token = await this.session.tokens.get( 'csrf' ); }
       const res = await this.session._post( { action: 'changeauthenticationdata', ...params } );
-      if ( res.changeauthenticationdata ) { this.session.logger.info( 'WikiSession.auth.changeauthenticationdata( ... ) changed' ); }
-      return res.changeauthenticationdata;
+      if ( res?.changeauthenticationdata ) { this.session.logger.info( 'WikiSession.auth.changeauthenticationdata( ... ) changed' ); }
+      return res?.changeauthenticationdata || null;
     }
     catch ( e ) { this.session.logger.error( 'WikiSession.auth.changeauthenticationdata( ... ) failure: ' + e.message ); }
     return null;
@@ -33,13 +33,7 @@ export class WikiAuth {
    * @param { Object } params - Parameters for clientlogin (username, password, logincontinue, etc.).
    * @returns { Promise<Object|null> } The full clientlogin response object.
    * @example
-   * // Initial attempt
-   * let res = await session.auth.clientlogin( { username: 'Bot', password: '...', loginreturnurl: 'https://bot.local' } );
-   *
-   * // If 2FA is needed (status: 'UI')
-   * if ( res.status === 'UI' ) {
-   *   res = await session.auth.clientlogin( { logincontinue: true, OATHToken: '123456' } );
-   * }
+   * let res = await session.auth.clientlogin( { username: 'Bot', password: '...' } );
    */
   async clientlogin( params ) {
     try {
@@ -57,6 +51,25 @@ export class WikiAuth {
       return data;
     }
     catch ( e ) { this.session.logger.error( 'WikiSession.auth.clientlogin( ... ) failure: ' + e.message ); }
+    return null;
+  }
+
+  /**
+   * Links an account from a third-party provider to the current user.
+   * @param { Object } params - Parameters for the linkaccount action.
+   * @returns { Promise<Object|null> } Result of the linkaccount attempt.
+   * @example
+   * await session.auth.linkaccount( { linktoken: '...', linkreturnurl: '...' } );
+   */
+  async linkaccount( params ) {
+    try {
+      if ( !params.linktoken ) { params.linktoken = await this.session.tokens.get( 'login' ); }
+      const res = await this.session._post( { action: 'linkaccount', ...params } );
+      const data = res ? res.linkaccount : null;
+      if ( data?.status === 'PASS' ) { this.session.logger.info( 'WikiSession.auth.linkaccount( ... ) successful' ); }
+      return data;
+    }
+    catch ( e ) { this.session.logger.error( 'WikiSession.auth.linkaccount( ... ) failure: ' + e.message ); }
     return null;
   }
 
@@ -97,6 +110,24 @@ export class WikiAuth {
   }
 
   /**
+   * Changes preferences of the current user.
+   * @param { Object } params - Parameters for the options action.
+   * @returns { Promise<Object|null> } Result of the options change.
+   * @example
+   * await session.auth.options( { optionname: 'nickname', optionvalue: 'NewNick' } );
+   */
+  async options( params ) {
+    try {
+      if ( !params.token ) { params.token = await this.session.tokens.get( 'csrf' ); }
+      const res = await this.session._post( { action: 'options', ...params } );
+      if ( res?.options === 'success' ) { this.session.logger.info( 'WikiSession.auth.options( ... ) updated' ); }
+      return res;
+    }
+    catch ( e ) { this.session.logger.error( 'WikiSession.auth.options( ... ) failure: ' + e.message ); }
+    return null;
+  }
+
+  /**
    * Removes authentication data for the current user.
    * @param { Object } params - Parameters for the removeauthenticationdata action.
    * @returns { Promise<Object|null> } Result of the action.
@@ -129,6 +160,24 @@ export class WikiAuth {
       return res.resetpassword;
     }
     catch ( e ) { this.session.logger.error( 'WikiSession.auth.resetpassword( ... ) failure: ' + e.message ); }
+    return null;
+  }
+
+  /**
+   * Removes a linked third-party account from the current user.
+   * @param { Object } params - Parameters for the unlinkaccount action.
+   * @returns { Promise<Object|null> } Result of the unlinkaccount attempt.
+   * @example
+   * await session.auth.unlinkaccount( { requestid: '...' } );
+   */
+  async unlinkaccount( params ) {
+    try {
+      if ( !params.token ) { params.token = await this.session.tokens.get( 'csrf' ); }
+      const res = await this.session._post( { action: 'unlinkaccount', ...params } );
+      if ( res?.unlinkaccount?.status === 'PASS' ) { this.session.logger.info( 'WikiSession.auth.unlinkaccount( ... ) successful' ); }
+      return res?.unlinkaccount || null;
+    }
+    catch ( e ) { this.session.logger.error( 'WikiSession.auth.unlinkaccount( ... ) failure: ' + e.message ); }
     return null;
   }
 }

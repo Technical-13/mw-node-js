@@ -10,14 +10,14 @@ A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limi
 - **Encrypted Auth**: Securely handle wiki credentials using AES-256-CBC.
 - **Rate Limiting**: Built-in `minDelay` queue and native `fetch` handling to prevent API throttling.
 - **Continuation**: `WikiQuery.execute()` handles recursion logic for large API queries automatically.
-- **Flexible Logging**: Daily or incremental logs in Markdown, JSON, CSV, or Plain Text with collision-proof `|TAG|` placeholders.
+- **Flexible Logging**: Daily or incremental logs in Markdown, JSON, CSV, or Plain Text with character-limit chunking for Discord embeds.
 - **Modular Design**: Separated concerns for Authentication, Maintenance, Moderation, and specialized Queries.
 
 ## Configuration
 Setting up your bot requires two files: a private environment file and a public configuration file.
 
 ### Step 1: Create a `.env` file
-In your project root, create a file named `.env`. This file stores your "private keys" and should **never** be shared or uploaded to GitHub.
+In your project root, create a file named `.env`. This file stores your "private keys" and should **never** be shared or uploaded to GitHub or any other repository system.
 ```text
 WIKI_ENCRYPTION_KEY=your_64_character_hex_key_here
 WIKI_ENCRYPTION_SEED=your_32_character_hex_seed_here
@@ -34,7 +34,6 @@ Create a file named `wikiconfig.json` to store your non-sensitive bot settings.
    - *Note: You must have the **Java Runtime Environment (JRE)** installed to run the encryptor.*
      - *If you do not have it, you can download it from [Java.com](https://java.com).*
 3. Copy the resulting Hex string into the field below:
-
 ```json
 {
   "apiUrl": "https://your-wiki.com",
@@ -52,13 +51,17 @@ Create a file named `wikiconfig.json` to store your non-sensitive bot settings.
 
 #### Detailed Variable Guide:
 - **apiUrl**: The full URL to your wiki's `api.php`.
+- **username**: The name of the bot account as registered on the wiki.
+- **encryptedPassword**: Your wiki password after being processed by the WikiEncryptor.jar tool.
+- **userAgent**: A unique identifier for your bot (e.g., MyBot/1.0.0). MediaWiki requires this to identify the source of traffic.
+- **logDir**: The folder where your log files will be stored (e.g., ./logs). The library creates this folder automatically if it doesn't exist.
 - **minDelay**: The "speed limit" in milliseconds between requests (1000 = 1 second). Use this to avoid tripping anti-spam triggers or being throttled by the server.
 - **logName**: The template for your log files. The logger **appends** to the same file until the placeholders result in a new filename.
   - `|YYYY|`: Replaced with the current 4-digit Year.
   - `|MM|`: Replaced with the current 2-digit Month.
   - `|DD|`: Replaced with the current 2-digit Day.
   - `|##|`: An auto-incrementing number. Use this if you want to start a fresh log file manually or if you need multiple logs for the same day.
-- **Verbosity Levels**:
+- **Verbosity Levels**: Separate verbosity levels for logging to the **console** and to the **logDir/logName** defined above.
   - `0`: Silent. No logs will be produced.
   - `1`: Warn/Error. Only logs system failures or warnings. Recommended for stable production bots.
   - `2`: Debug. Includes warning, errors, and granular debugging messages to trace logic.
@@ -72,6 +75,8 @@ import fs from 'node:fs';
 import { WikiSession } from '@Technical-13/mw-node-js';
 
 const config = JSON.parse( fs.readFileSync( './wikiconfig.json', 'utf8' ) );
+
+// Inject the private keys from your .env file
 config.key = process.env.WIKI_ENCRYPTION_KEY;
 config.seed = process.env.WIKI_ENCRYPTION_SEED;
 
@@ -92,16 +97,22 @@ await session.edit.write( {
 - **`WikiSession` (The Hub)**
   - `decryptPassword( data, seed, key )`: (Static) Helper for secure credential handling.
 - **`WikiAccount`**
+  - `acquiretempusername()`: Acquires a temporary username for logged-out sessions.
+  - `createaccount( params )`: Creates a new user account.
   - `email( params )`: Sends internal wiki emails to other users.
-  - `getUsers( params )`: Retrieves a list of user metadata and account information.
   - `verify( user, pageid, revid, reason )`: Performs an automated user verification workflow, including rights assignment and content suppression.
+  - `getUsers( params )`: Retrieves user metadata and account information.
+  - `validatepassword( params )`: Checks a password against site policies.
 - **`WikiAuth`**
   - `changeauthenticationdata( params )`: Updates existing AuthManager credentials (like passwords).
-  - `clientlogin( params )`: The modern MediaWiki 1.43+ login flow.
   - `login( params )`: **(Legacy)** Standard MediaWiki login. Use only if `clientlogin` is unavailable.
+  - `clientlogin( params )`: Modern interactive login flow (supports 2FA/UI/Redirect).
+  - `linkaccount( params )`: Links third-party provider accounts.
   - `logout()`: Ends the current session and clears internal cookies.
   - `removeauthenticationdata( params )`: Detaches specific authentication methods from the account.
   - `resetpassword( params )`: Triggers or completes the password reset process.
+  - `options( params )`: Changes user preferences.
+  - `unlinkaccount( params )`: Removes a linked third-party account.
 - **`WikiEdit`**
   - `changecontentmodel( params )`: Changes how a page's content is interpreted (e.g., Wikitext to JSON).
   - `mergehistory( params )`: Combines the revision histories of two different pages.
@@ -109,6 +120,12 @@ await session.edit.write( {
   - `titleblacklist( params )`: Validates page titles against the title blacklist filter.
   - `upload( params )`: Handles asset and file uploads to the wiki.
   - `write( params )`: The primary tool for creating and modifying pages (aligns with `api.php?action=edit`).
+  - `imagerotate( params )`: Rotates one or more images.
+  - `setpagelanguage( params )`: Changes the content language of a page.
+- **`WikiFeeds`**
+  - `contributions( params )`: Returns a user's contributions feed (RSS/Atom).
+  - `recentchanges( params )`: Returns the recent changes feed.
+  - `watchlist( params )`: Returns the current user's watchlist feed.
 - **`WikiMaintenance`**
   - `compare( params )`: Generates a comparison (diff) between two revisions or pages.
   - `delete( params )`: Permanently removes a page from the wiki.

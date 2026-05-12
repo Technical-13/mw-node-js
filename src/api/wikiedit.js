@@ -29,6 +29,24 @@ export class WikiEdit {
   }
 
   /**
+   * Rotates one or more images.
+   * @param { Object } params - Parameters for the imagerotate action.
+   * @returns { Promise<Object|null> } Result of the imagerotate action.
+   * @example
+   * await session.edit.imagerotate( { title: 'File:Image.jpg', rotation: 90 } );
+   */
+  async imagerotate( params ) {
+    try {
+      if ( !params.token ) { params.token = await this.session.tokens.get( 'csrf' ); }
+      const res = await this.session._post( { action: 'imagerotate', ...params } );
+      if ( res?.imagerotate ) { this.session.logger.info( 'WikiSession.edit.imagerotate( ... ) successful' ); }
+      return res?.imagerotate || null;
+    }
+    catch ( e ) { this.session.logger.error( 'WikiSession.edit.imagerotate( ... ) failure: ' + e.message ); }
+    return null;
+  }
+
+  /**
    * Merges the history of one page into another.
    * @param { Object } params - Parameters for the mergehistory action.
    * @returns { Promise<Object|null> } Result of the action.
@@ -43,6 +61,24 @@ export class WikiEdit {
       return res?.mergehistory || null;
     }
     catch ( e ) { this.session.logger.error( 'WikiSession.edit.mergehistory( ... ) failure: ' + e.message ); }
+    return null;
+  }
+
+  /**
+   * Changes the content language of a page.
+   * @param { Object } params - Parameters for the setpagelanguage action.
+   * @returns { Promise<Object|null> } Result of the setpagelanguage action.
+   * @example
+   * await session.edit.setpagelanguage( { title: 'Main Page', lang: 'fr' } );
+   */
+  async setpagelanguage( params ) {
+    try {
+      if ( !params.token ) { params.token = await this.session.tokens.get( 'csrf' ); }
+      const res = await this.session._post( { action: 'setpagelanguage', ...params } );
+      if ( res?.setpagelanguage ) { this.session.logger.info( 'WikiSession.edit.setpagelanguage( ... ) changed for: ' + params.title ); }
+      return res?.setpagelanguage || null;
+    }
+    catch ( e ) { this.session.logger.error( 'WikiSession.edit.setpagelanguage( ... ) failure: ' + e.message ); }
     return null;
   }
 
