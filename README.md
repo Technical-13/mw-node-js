@@ -1,4 +1,6 @@
 [![Publish Status](https://github.com/Technical-13/mw-node-js/actions/workflows/publish.yml/badge.svg)](https://github.com/Technical-13/mw-node-js)
+[![Last Commit](https://img.shields.io/github/last-commit/Technical-13/mw-node-js?style=plastic&logo=github&logoColor=magenta&labelColor=black&color=magenta)](https://github.com/Technical-13/mw-node-js/commits/main)
+[![License](https://img.shields.io/badge/BSD-3--Clause-magenta?style=plastic&logo=freebsd&logoColor=magenta&labelColor=black)](https://github.com/Technical-13/mw-node-js/blob/main/LICENSE)
 
 # mw-node-js (v1.0.1)
 A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limiting, and markdown logging.
