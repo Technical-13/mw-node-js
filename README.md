@@ -1,3 +1,5 @@
+[![Publish Status](https://github.com/Technical-13/mw-node-js/actions/workflows/publish.yml/badge.svg)](https://github.com/Technical-13/mw-node-js)
+
 # mw-node-js (v1.0.1)
 A modular Node.js 22+ library for MediaWiki 1.43+ with encrypted auth, rate limiting, and markdown logging.
 
