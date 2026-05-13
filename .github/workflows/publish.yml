@@ -91,12 +91,12 @@ jobs:
           echo "COMMIT_MSG=$MSG" >> $GITHUB_ENV
 
       - name: Update Changelog
+        if: github.event.inputs.dry_run != 'true'
         id: changelog
         uses: requarks/changelog-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.FINAL_VERSION }}
-        continue-on-error: ${{ github.event.inputs.dry_run == 'true' }}
 
       - name: Dry Run Publish
         if: github.event.inputs.dry_run == 'true'
