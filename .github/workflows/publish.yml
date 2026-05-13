@@ -96,6 +96,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.FINAL_VERSION }}
+        continue-on-error: ${{ github.event.inputs.dry_run == 'true' }}
 
       - name: Dry Run Publish
         if: github.event.inputs.dry_run == 'true'
