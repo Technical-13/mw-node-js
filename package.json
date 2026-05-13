@@ -1,6 +1,6 @@
 {
   "name": "@Technical-13/mw-node-js",
-  "version": "0.0.175",
+  "version": "0.0.178",
   "lastUpdated": "2026-05-12T22:32:13Z",
   "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth, rate limiting, and markdown logging.",
   "scripts": {
