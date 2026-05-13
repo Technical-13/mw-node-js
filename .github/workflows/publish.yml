@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version Number (Leave blank to auto-increment)'
+        description: 'Version Number (Leave blank to auto-increment minor)'
         required: false
         type: string
       release_notes:
@@ -26,6 +26,7 @@ jobs:
       contents: write
       packages: write
       security-events: read
+      pull-requests: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -49,6 +50,21 @@ jobs:
 
       - name: Run Linter
         run: npm run lint
+        
+      - name: Auto-merge Dependabot PRs
+        run: |
+          prs=$(gh pr list --author "dependabot[bot]" --json url --limit 10)
+          merged=false
+          for url in $(echo "${prs}" | jq -r '.[].url'); do
+            gh pr review --approve "$url"
+            gh pr merge --auto --squash "$url"
+            merged=true
+          done
+          # If we merged something, pull the new changes to the runner
+          if [ "$merged" = true ]; then git pull origin main; fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true 
 
       - name: Sync Metadata (package.json & README)
         run: |
@@ -89,7 +105,7 @@ jobs:
         if: github.event.inputs.dry_run == 'false'
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json README.md CHANGELOG.md
           git commit -m "chore: ${{ env.COMMIT_MSG }}"
           git tag ${{ env.FINAL_VERSION }}

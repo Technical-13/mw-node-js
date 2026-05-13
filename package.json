@@ -4,7 +4,7 @@
   "lastUpdated": "2026-05-11T20:25:13Z",
   "description": "Modular Discord.js and MediaWiki 1.43 library with encrypted auth, rate limiting, and markdown logging.",
   "scripts": {
-    "lint": "eslint src/**/*.js",
+    "lint": "eslint \"src/**/*.js\"",
     "lint:fix": "eslint src/**/*.js --fix"
   },
   "type": "module",
