@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version Number (Leave blank to auto-increment)'
+        description: 'Version Number (Leave blank to auto-increment patch)'
         required: false
         type: string
       release_notes:
@@ -75,7 +75,7 @@ jobs:
         run: |
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')          
           if [ -z "${{ github.event.inputs.version }}" ]; then
-            NEW_VERSION=$(npm version minor --no-git-tag-version)
+            NEW_VERSION=$(npm version patch --no-git-tag-version)
           else
             NEW_VERSION=v${{ github.event.inputs.version }}
             npm version ${{ github.event.inputs.version }} --no-git-tag-version
